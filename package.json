@@ -1,0 +1,33 @@
+{
+  "name": "@redux-multipurpose/angular-cli",
+  "version": "1.0.0",
+  "description": "A multipurpose redux tools cli",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "multux": "./index.js"
+  },
+  "preferGlobal": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KitCarson88/redux-multipurpose-angular-cli.git"
+  },
+  "keywords": [
+    "angular",
+    "redux",
+    "multipurpose",
+    "redux-multipurpose",
+    "cli"
+  ],
+  "author": "Simone Colazzo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KitCarson88/redux-multipurpose-angular-cli/issues"
+  },
+  "homepage": "https://github.com/KitCarson88/redux-multipurpose-angular-cli#readme",
+  "dependencies": {
+    "plop": "^2.7.1"
+  }
+}
