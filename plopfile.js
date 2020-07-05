@@ -1,4 +1,6 @@
 module.exports = function (plop) {
+    plop.addHelper('cwd', (p) => process.cwd());
+
     plop.setGenerator('test', {
         prompts: [{
             type: 'confirm',
@@ -11,13 +13,13 @@ module.exports = function (plop) {
             if(data.wantTacos) {
                 actions.push({
                     type: 'add',
-                    path: 'folder/{{dashCase name}}.txt',
+                    path: '{{cwd}}/folder/{{dashCase name}}.txt',
                     templateFile: 'templates/tacos.txt'
                 });
             } else {
                 actions.push({
                     type: 'add',
-                    path: 'folder/{{dashCase name}}.txt',
+                    path: '{{cwd}}/folder/{{dashCase name}}.txt',
                     templateFile: 'templates/burritos.txt'
                 });
             }

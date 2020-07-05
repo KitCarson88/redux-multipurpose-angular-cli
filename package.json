@@ -28,6 +28,9 @@
   },
   "homepage": "https://github.com/KitCarson88/redux-multipurpose-angular-cli#readme",
   "dependencies": {
+    "chalk": "^4.1.0",
+    "clear": "^0.1.0",
+    "figlet": "^1.4.0",
     "plop": "^2.7.1"
   }
 }
