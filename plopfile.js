@@ -36,14 +36,26 @@ module.exports = function (plop)
                 type: 'confirm',
                 name: 'createStore',
                 message: 'No store.module found. Do you want initialize a new one?'
-            },{
+            }, {
                 type: 'confirm',
                 name: 'enableEpics',
                 message: 'Do you want to initialize redux observable epics skeleton?'
-            },{
+            }, {
                 type: 'confirm',
                 name: 'enableSagas',
                 message: 'Do you want to initialize redux sagas?'
+            }, {
+                type: 'confirm',
+                name: 'enablePersistence',
+                message: 'Do you want to enable redux-persist persistence?'
+            }, {
+                type: 'input',
+                name: 'routerKey',
+                message: 'Do you want to enable angular router reducer? Leave it blank if you don\'t need it; otherwise digit a key name to the reducer (e.g. router)'
+            }, {
+                type: 'confirm',
+                name: 'enableLogger',
+                message: 'Do you want to enable redux logger?'
             }],
             actions: function(data) {
                 var actions = [];
