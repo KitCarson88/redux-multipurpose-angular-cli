@@ -27,31 +27,53 @@ function verifyStoreModule()
 module.exports = function (plop)
 {
     //Verify if store module exists and it's contained under src/store path
+    plop.addHelper('cwd', (p) => process.cwd());
+
     if (!verifyStoreModule())
     {
-        plop.addHelper('cwd', (p) => process.cwd());
-    
-        plop.setGenerator('test', {
+        plop.setGenerator('Create store generator', {
             prompts: [{
                 type: 'confirm',
-                name: 'wantTacos',
-                message: 'Do you want tacos?'
+                name: 'createStore',
+                message: 'No store.module found. Do you want initialize a new one?'
+            },{
+                type: 'confirm',
+                name: 'enableEpics',
+                message: 'Do you want to initialize redux observable epics skeleton?'
+            },{
+                type: 'confirm',
+                name: 'enableSagas',
+                message: 'Do you want to initialize redux sagas?'
             }],
             actions: function(data) {
                 var actions = [];
     
-                if(data.wantTacos) {
+                if(data.createStore)
+                {
                     actions.push({
                         type: 'add',
-                        path: '{{cwd}}/folder/{{dashCase name}}.txt',
-                        templateFile: 'templates/tacos.txt'
+                        path: '{{cwd}}/src/store/store.module.ts',
+                        templateFile: 'templates/store.module.tpl'
                     });
-                } else {
-                    actions.push({
-                        type: 'add',
-                        path: '{{cwd}}/folder/{{dashCase name}}.txt',
-                        templateFile: 'templates/burritos.txt'
-                    });
+
+                    if (data.enableEpics)
+                        actions.push({
+                            type: 'add',
+                            path: '{{cwd}}/src/store/epics.ts',
+                            templateFile: 'templates/epics.tpl'
+                        });
+
+                    if (data.enableSagas)
+                        actions.push({
+                            type: 'add',
+                            path: '{{cwd}}/src/store/sagas.ts',
+                            templateFile: 'templates/sagas.tpl'
+                        });
+                }
+                else
+                {
+                    console.log("Thanks for using Redux Multipurpose Cli");
+                    process.exit(0);
                 }
     
                 return actions;
