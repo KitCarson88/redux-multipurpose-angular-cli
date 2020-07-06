@@ -31,12 +31,10 @@ module.exports = function (plop)
 
     if (!verifyStoreModule())
     {
+        console.log('\nNo store.module found. Let\'s initialize a new one\n');
+
         plop.setGenerator('Create store generator', {
             prompts: [{
-                type: 'confirm',
-                name: 'createStore',
-                message: 'No store.module found. Do you want initialize a new one?'
-            }, {
                 type: 'confirm',
                 name: 'enableEpics',
                 message: 'Do you want to initialize redux observable epics skeleton?'
@@ -60,33 +58,25 @@ module.exports = function (plop)
             actions: function(data) {
                 var actions = [];
     
-                if(data.createStore)
-                {
+                actions.push({
+                    type: 'add',
+                    path: '{{cwd}}/src/store/store.module.ts',
+                    templateFile: 'templates/store.module.tpl'
+                });
+
+                if (data.enableEpics)
                     actions.push({
                         type: 'add',
-                        path: '{{cwd}}/src/store/store.module.ts',
-                        templateFile: 'templates/store.module.tpl'
+                        path: '{{cwd}}/src/store/epics.ts',
+                        templateFile: 'templates/epics.tpl'
                     });
 
-                    if (data.enableEpics)
-                        actions.push({
-                            type: 'add',
-                            path: '{{cwd}}/src/store/epics.ts',
-                            templateFile: 'templates/epics.tpl'
-                        });
-
-                    if (data.enableSagas)
-                        actions.push({
-                            type: 'add',
-                            path: '{{cwd}}/src/store/sagas.ts',
-                            templateFile: 'templates/sagas.tpl'
-                        });
-                }
-                else
-                {
-                    console.log("Thanks for using Redux Multipurpose Cli");
-                    process.exit(0);
-                }
+                if (data.enableSagas)
+                    actions.push({
+                        type: 'add',
+                        path: '{{cwd}}/src/store/sagas.ts',
+                        templateFile: 'templates/sagas.tpl'
+                    });
     
                 return actions;
             }
