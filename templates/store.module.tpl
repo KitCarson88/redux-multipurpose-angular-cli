@@ -2,13 +2,12 @@ import { NgModule, Optional, SkipSelf } from "@angular/core";{{#if routerKey}}
 import { Router } from '@angular/router';{{/if}}
 
 import { initializeStore } from '@redux-multipurpose/core';{{#if routerKey}}
-import { configureRouterReducer } from '@redux-multipurpose/angular-router';{{/if}}
+import { configureRouterReducer } from '@redux-multipurpose/angular-router';{{/if}}{{#if enablePersistence}}
+import storage from 'redux-persist/lib/storage';{{/if}}
 
 import rootReducer from './store.reducer';{{#if enableEpics}}
 import rootEpic from './epics';{{/if}}{{#if enableSagas}}
 import rootSaga from './sagas';{{/if}}
-
-import { StorageService } from '../services/storage.service';
 
 const ACTIONS = [
 ];
@@ -24,8 +23,7 @@ export class StoreModule
 {
   constructor(
     @Optional() @SkipSelf() parentModule: StoreModule{{#if routerKey}},
-    private router: Router{{/if}},
-    private storage: StorageService
+    private router: Router{{/if}}
   )
   {
     if (parentModule)
@@ -34,7 +32,7 @@ export class StoreModule
     const middlewares = [  ];
 
     initializeStore({
-      reducers: rootReducer(this.storage),
+      reducers: rootReducer({{#if enablePersistence}}storage{{/if}}),
       devTools: true,
       middlewares{{#if enableEpics}},
       epics: rootEpic{{/if}}{{#if enableSagas}},

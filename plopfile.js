@@ -35,6 +35,11 @@ module.exports = function (plop)
 
         plop.setGenerator('Create store generator', {
             prompts: [{
+                type: 'input',
+                name: 'storeDir',
+                message: 'In which directory do you want to create the store folder?',
+                default: 'src'
+            }, {
                 type: 'confirm',
                 name: 'enableEpics',
                 message: 'Do you want to initialize redux observable epics skeleton?'
@@ -60,21 +65,26 @@ module.exports = function (plop)
     
                 actions.push({
                     type: 'add',
-                    path: '{{cwd}}/src/store/store.module.ts',
+                    path: '{{cwd}}/' + data.storeDir + '/store/store.module.ts',
                     templateFile: 'templates/store.module.tpl'
+                });
+                actions.push({
+                    type: 'add',
+                    path: '{{cwd}}/' + data.storeDir + '/store/store.reducer.ts',
+                    templateFile: 'templates/store.reducer.tpl'
                 });
 
                 if (data.enableEpics)
                     actions.push({
                         type: 'add',
-                        path: '{{cwd}}/src/store/epics.ts',
+                        path: '{{cwd}}/' + data.storeDir + '/store/epics.ts',
                         templateFile: 'templates/epics.tpl'
                     });
 
                 if (data.enableSagas)
                     actions.push({
                         type: 'add',
-                        path: '{{cwd}}/src/store/sagas.ts',
+                        path: '{{cwd}}/' + data.storeDir + '/store/sagas.ts',
                         templateFile: 'templates/sagas.tpl'
                     });
     
