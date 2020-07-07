@@ -37,9 +37,10 @@ function verifyStoreModule()
     for (var i = 0; i < dirs.length; ++i)
     {
         var filePath = getSrcFileRelativePath('store.module');
+        console.log("filePath: ", filePath);
         if (filePath)
         {
-            if (dirs[i].indexOf("store/store.module") < 0)
+            if (filePath.indexOf("store/store.module") < 0)
             {
                 console.log("The store module is not well configured. Please delete it and restart the cli");
                 process.exit(-1);
@@ -78,7 +79,7 @@ module.exports = function (plop)
     {
         console.log('\nNo store.module found. Let\'s initialize a new one\n');
 
-        plop.setGenerator('Create store generator', {
+        plop.setGenerator('createStore', {
             prompts: [{
                 type: 'input',
                 name: 'storeDir',
@@ -153,6 +154,25 @@ module.exports = function (plop)
                     });
                 }
     
+                return actions;
+            }
+        });
+    }
+    else
+    {
+        plop.setGenerator('configureStore', {
+            prompts: [{
+                type: 'confirm',
+                name: 'test',
+                message: 'Test?',
+            }, {
+                type: 'confirm',
+                name: 'test2',
+                message: 'Test 2?',
+            }],
+            actions: function(data) {
+                var actions = [];
+
                 return actions;
             }
         });
