@@ -7,55 +7,65 @@ const NG_MODULE = '@NgModule';
 const IMPORTS = 'imports';
 const STORE_MODULE = 'StoreModule';
 
+function getSrcFileRelativePath(file)
+{
+    var dirs = glob.sync(SRC_DIR + '/**/*');
+
+    for (var i = 0; i < dirs.length; ++i)
+        if (dirs[i].indexOf(file) >= 0)
+            return dirs[i];
+
+    return null;
+}
+
+function getSrcFileAbsolutePath(file)
+{
+    let relative = getSrcFileRelativePath(file);
+    if (relative)
+        return cwd() + '/' + relative;
+    else
+        return null;
+}
+
 //If store module doesn't exists return false
 //If store module exists in the right folder returns true
 //If store module exists in a wrong folder exits the app
 function verifyStoreModule()
 {
-  var dirs = glob.sync(SRC_DIR + '/**/*');
-
-  for (var i = 0; i < dirs.length; ++i)
-    if (dirs[i].indexOf("store.module") >= 0)
-    {
-      if (dirs[i].indexOf("store/store.module") < 0)
-      {
-        console.log("The store module is not well configured. Please delete it and restart the cli");
-        process.exit(-1);
-      }
-
-      return true;
-    }
-
-  return false;
-}
-
-function addImportToAppModule(path)
-{
     var dirs = glob.sync(SRC_DIR + '/**/*');
 
-    var subpath;
     for (var i = 0; i < dirs.length; ++i)
-        if (dirs[i].indexOf("app.module") >= 0)
-            subpath = dirs[i];
-
-    if (subpath)
     {
-        var appModule = fs.readFileSync(path + '/' + subpath).toString();
+        var filePath = getSrcFileRelativePath('store.module');
+        if (filePath)
+        {
+            if (dirs[i].indexOf("store/store.module") < 0)
+            {
+                console.log("The store module is not well configured. Please delete it and restart the cli");
+                process.exit(-1);
+            }
 
-        const appModuleLines = appModule.split(/\r?\n/);
-        
-        var ngModuleLineIndex, importsLineIndex, storeModuleLineIndex;
+            return true;
+        }
 
-        for (var i = 0; i < appModuleLines; ++i)
-            if (appModuleLines[i].indexOf(NG_MODULE) >= 0)
-                ngModuleLineIndex = i;
-            else if (appModuleLines[i].indexOf(IMPORTS) >= 0)
-                importsLineIndex = i;
-            else if (appModuleLines[i].indexOf(STORE_MODULE) >= 0)
-                storeModuleLineIndex = i;
+        return false;
+    }
+}
 
-        //if (ngModuleLineIndex && importsLineIndex && importsLineIndex > ngModuleLineIndex)
-
+//Verify if StoreModule is added to app.module yet.
+//If no app.module is recognized, it quits the app.
+function verifyInAppModuleImport(pathFile)
+{
+    if (pathFile)
+    {
+        var appModule = fs.readFileSync(pathFile).toString();
+        return appModule.indexOf("StoreModule") >= 0;
+    }
+    else
+    {
+        console.log("Cannot recognize app.module. Exit...");
+        process.exit(-1);
+        return false;
     }
 }
 
@@ -112,8 +122,6 @@ module.exports = function (plop)
                     templateFile: 'templates/store.reducer.tpl'
                 });
 
-                console.log("data: ", data);
-
                 if (data.enableEpics)
                     actions.push({
                         type: 'add',
@@ -127,6 +135,23 @@ module.exports = function (plop)
                         path: '{{cwd}}/' + data.storeDir + '/store/sagas.ts',
                         templateFile: 'templates/sagas.tpl'
                     });
+
+                let appModuleFile = getSrcFileAbsolutePath('app.module');
+                if (!verifyInAppModuleImport(appModuleFile))
+                {
+                    actions.push({
+                        type: 'modify',
+                        path: appModuleFile,
+                        pattern: /((imports)\s*\t*\n*:\s*\t*\n*\[)/gi,
+                        template: '$1\n\t\tStoreModule,'
+                    });
+                    actions.push({
+                        type: 'modify',
+                        path: appModuleFile,
+                        pattern: /(\n*@NgModule\s*\t*\n*\(\s*\t*\n*\{)/gi,
+                        template: '\n\nimport { StoreModule } from \'' + data.storeDir + '/store/store.module\';$1'
+                    });
+                }
     
                 return actions;
             }
