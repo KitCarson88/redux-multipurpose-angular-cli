@@ -54,7 +54,7 @@ function addImportToAppModule(path)
             else if (appModuleLines[i].indexOf(STORE_MODULE) >= 0)
                 storeModuleLineIndex = i;
 
-        if (ngModuleLineIndex && importsLineIndex && importsLineIndex > ngModuleLineIndex)
+        //if (ngModuleLineIndex && importsLineIndex && importsLineIndex > ngModuleLineIndex)
 
     }
 }
@@ -75,28 +75,31 @@ module.exports = function (plop)
                 message: 'In which directory do you want to create the store folder?',
                 default: SRC_DIR
             }, {
-                type: 'confirm',
-                name: 'enableEpics',
-                message: 'Do you want to initialize redux observable epics skeleton?'
-            }, {
-                type: 'confirm',
-                name: 'enableSagas',
-                message: 'Do you want to initialize redux sagas?'
-            }, {
-                type: 'confirm',
-                name: 'enablePersistence',
-                message: 'Do you want to enable redux-persist persistence?'
+                type: 'checkbox',
+                name: 'configurations',
+                message: 'Choose which features activate on store configuration\n',
+                choices: [
+                    { value: 'epics', name: 'Epics skeleton (redux-observables)' },
+                    { value: 'sagas', name: 'Sagas skeleton (redux-saga)' },
+                    { value: 'persistence', name: 'Persistence (redux-persist)' },
+                    { value: 'logger', name: 'Logger (redux-logger)' }
+                ]
             }, {
                 type: 'input',
                 name: 'routerKey',
                 message: 'Do you want to enable angular router reducer? Leave it blank if you don\'t need it; otherwise digit a key name to the reducer (e.g. router)'
-            }, {
-                type: 'confirm',
-                name: 'enableLogger',
-                message: 'Do you want to enable redux logger?'
             }],
             actions: function(data) {
                 var actions = [];
+
+                if (data.configurations.indexOf('epics') >= 0)
+                    data.enableEpics = true;
+                if (data.configurations.indexOf('sagas') >= 0)
+                    data.enableSagas = true;
+                if (data.configurations.indexOf('persistence') >= 0)
+                    data.enablePersistence = true;
+                if (data.configurations.indexOf('logger') >= 0)
+                    data.enableLogger = true;
     
                 actions.push({
                     type: 'add',
@@ -108,6 +111,8 @@ module.exports = function (plop)
                     path: '{{cwd}}/' + data.storeDir + '/store/store.reducer.ts',
                     templateFile: 'templates/store.reducer.tpl'
                 });
+
+                console.log("data: ", data);
 
                 if (data.enableEpics)
                     actions.push({
