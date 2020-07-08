@@ -3,9 +3,6 @@ const fs = require('fs');
 const { cwd } = require('process');
 
 const SRC_DIR = 'src';
-const NG_MODULE = '@NgModule';
-const IMPORTS = 'imports';
-const STORE_MODULE = 'StoreModule';
 
 function getSrcFileRelativePath(file)
 {
@@ -27,6 +24,13 @@ function getSrcFileAbsolutePath(file)
         return null;
 }
 
+function getStoreDirectory()
+{
+    var filePath = getSrcFileRelativePath('store.module');
+    const store = 'store/';
+    return filePath.substring(0, filePath.indexOf(store)) + store;
+}
+
 //If store module doesn't exists return false
 //If store module exists in the right folder returns true
 //If store module exists in a wrong folder exits the app
@@ -37,7 +41,6 @@ function verifyStoreModule()
     for (var i = 0; i < dirs.length; ++i)
     {
         var filePath = getSrcFileRelativePath('store.module');
-        console.log("filePath: ", filePath);
         if (filePath)
         {
             if (filePath.indexOf("store/store.module") < 0)
@@ -122,6 +125,11 @@ module.exports = function (plop)
                     path: '{{cwd}}/' + data.storeDir + '/store/store.reducer.ts',
                     templateFile: 'templates/store.reducer.tpl'
                 });
+                actions.push({
+                    type: 'add',
+                    path: '{{cwd}}/' + data.storeDir + '/store/index.ts',
+                    templateFile: 'templates/index.tpl'
+                });
 
                 if (data.enableEpics)
                     actions.push({
@@ -160,18 +168,80 @@ module.exports = function (plop)
     }
     else
     {
-        plop.setGenerator('configureStore', {
+        plop.setGenerator('create', {
             prompts: [{
-                type: 'confirm',
-                name: 'test',
-                message: 'Test?',
+                type: 'list',
+                name: 'operation',
+                message: 'Select an operation',
+                choices: [
+                    { value: 'substate', name: 'Create substate' },
+                    { value: 'epic', name: 'Create epic' }
+                ]
             }, {
+                when: function(response) {
+                    return response.operation === 'substate';
+                },
+                type: 'input',
+                name: 'substateName',
+                message: 'Name? (Please use spaces instead of camel case, dash case, or other notations)'
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate';
+                },
                 type: 'confirm',
-                name: 'test2',
-                message: 'Test 2?',
+                name: 'substateWs',
+                message: 'Is it a web service wrapper state?'
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate' && !response.substateWs;
+                },
+                type: 'list',
+                name: 'substateType',
+                message: 'Type?',
+                choices: [
+                    'boolean',
+                    'number',
+                    'string',
+                    'object'
+                ]
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate';
+                },
+                type: 'confirm',
+                name: 'substateDynamic',
+                message: 'Do you want to add the reducer statically\n(alternatively you can add it dynamically everywhere in your code)'
             }],
             actions: function(data) {
                 var actions = [];
+
+                if (data.operation === 'substate')
+                {
+                    if (!data.substateWs)
+                    {
+                        if (data.substateName && data.substateType)
+                        {
+                            if (data.substateType === 'object')
+                                data.substateObject = true;
+                            else
+                            {
+                                data.substateNotObject = true;
+                                if (data.substateType === 'boolean')
+                                    data.substateInitalValue = 'false';
+                                else if (data.substateType === 'number')
+                                    data.substateInitalValue = '0';
+                                else if (data.substateType === 'string')
+                                    data.substateInitalValue = 'null';
+                            }
+
+                            actions.push({
+                                type: 'add',
+                                path: getStoreDirectory() + '{{ camelCase substateName }}/{{ camelCase substateName }}.model.ts',
+                                templateFile: 'templates/substate/substate.model.tpl'
+                            });
+                        }
+                    }
+                }
 
                 return actions;
             }
