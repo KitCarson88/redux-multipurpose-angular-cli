@@ -239,6 +239,16 @@ module.exports = function (plop)
                                 path: getStoreDirectory() + '{{ camelCase substateName }}/{{ camelCase substateName }}.model.ts',
                                 templateFile: 'templates/substate/substate.model.tpl'
                             });
+                            actions.push({
+                                type: 'add',
+                                path: getStoreDirectory() + '{{ camelCase substateName }}/{{ camelCase substateName }}.slice.ts',
+                                templateFile: 'templates/substate/substate.slice.tpl'
+                            });
+                            actions.push({
+                                type: 'add',
+                                path: getStoreDirectory() + '{{ camelCase substateName }}/{{ camelCase substateName }}.selectors-dispatchers.ts',
+                                templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
+                            });
                         }
                     }
                 }

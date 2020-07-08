@@ -1,21 +1,16 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { SpinnerState, INITIAL_STATE_SPINNER } from './spinner.model';
+import { {{ pascalCase substateName }}State, INITIAL_STATE_{{ constantCase substateName}} } from './{{ camelCase substateName}}.model';
 
-const spinnerSlice = createSlice({
-    name: 'spinner',
-    initialState: INITIAL_STATE_SPINNER,
+const {{ camelCase substateName}}Slice = createSlice({
+    name: '{{ camelCase substateName}}',
+    initialState: INITIAL_STATE_{{ constantCase substateName}},
     reducers: {
-        show(state: SpinnerState, action: PayloadAction<any>) {
-            return true;
-        },
-        hide(state: SpinnerState, action: PayloadAction<any>) {
-            return false;
-        }
+        
     }
 });
 
-const { actions, reducer } = spinnerSlice;
+const { actions, reducer } = {{ camelCase substateName}}Slice;
 
-export const spinnerReducer = reducer;
-export const { show, hide } = actions;
+export const {{ camelCase substateName}}Reducer = reducer;
+export const {  } = actions;
