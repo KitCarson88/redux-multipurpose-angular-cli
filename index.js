@@ -14,6 +14,7 @@ function start()
   console.log(chalk.green(figlet.textSync('Multipurpose', { horizontalLayout: 'full' })));
   console.log(chalk.white(figlet.textSync('Redux', { horizontalLayout: 'full' })));
   console.log(chalk.red(figlet.textSync('Angular Cli', { horizontalLayout: 'full' })));
+  console.log("\n");
 
   Plop.launch({
     cwd: argv.cwd,
