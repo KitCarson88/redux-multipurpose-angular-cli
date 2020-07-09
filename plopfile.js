@@ -73,6 +73,17 @@ function verifyInAppModuleImport(pathFile)
     }
 }
 
+function pascalCase(value)
+{
+    var tokens = value.split(' ');
+    for (var i = 0; i < tokens.length; ++i)
+        if (tokens[i].length > 1)
+            tokens[i] = tokens[i].charAt(0).toUpperCase() + tokens[i].substring(1);
+        else if (tokens[i].length == 1)
+            tokens[i] = tokens[i].toUpperCase();
+    return tokens.join('');
+}
+
 module.exports = function (plop)
 {
     //Verify if store module exists and it's contained under src/store path
@@ -258,6 +269,8 @@ module.exports = function (plop)
                                 for (var i = 0; i < actionArray.length; ++i)
                                 actionArray[i] = actionArray[i].trim();
                                     data.actionArray = actionArray;
+
+                                plop.setPartial('stateType', pascalCase(data.substateName) + 'State');
 
                                 actions.push({
                                     type: 'add',
