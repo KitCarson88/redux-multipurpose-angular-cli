@@ -208,6 +208,13 @@ module.exports = function (plop)
                 when: function(response) {
                     return response.operation === 'substate';
                 },
+                type: 'input',
+                name: 'substateActions',
+                message: 'Do you want to add some actions?\n(Please insert them in camel case, or with spaces, separated by comma; or leave it blank to skip this step)'
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate';
+                },
                 type: 'confirm',
                 name: 'substateDynamic',
                 message: 'Do you want to add the reducer statically\n(alternatively you can add it dynamically everywhere in your code)'
@@ -244,11 +251,20 @@ module.exports = function (plop)
                                 path: getStoreDirectory() + '{{ camelCase substateName }}/{{ camelCase substateName }}.slice.ts',
                                 templateFile: 'templates/substate/substate.slice.tpl'
                             });
-                            actions.push({
-                                type: 'add',
-                                path: getStoreDirectory() + '{{ camelCase substateName }}/{{ camelCase substateName }}.selectors-dispatchers.ts',
-                                templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
-                            });
+
+                            if (data.substateActions)
+                            {
+                                var actionArray = data.substateActions.split(',');
+                                for (var i = 0; i < actionArray.length; ++i)
+                                actionArray[i] = actionArray[i].trim();
+                                    data.actionArray = actionArray;
+
+                                actions.push({
+                                    type: 'add',
+                                    path: getStoreDirectory() + '{{ camelCase substateName }}/{{ camelCase substateName }}.selectors-dispatchers.ts',
+                                    templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
+                                });
+                            }
                         }
                     }
                 }
