@@ -7,9 +7,9 @@ const {{ camelCase substateName}}Slice = createSlice({
     initialState: INITIAL_STATE_{{ constantCase substateName}},
     reducers: {
         {{#each actionArray as |actionToAdd|}}
-            {{camelCase actionToAdd}}(state: {{> stateType}}, action: PayloadAction) {
+        {{camelCase actionToAdd}}(state: {{> stateType}}, action: PayloadAction) {
 
-            },
+        },
         {{/each}}
     }
 });
