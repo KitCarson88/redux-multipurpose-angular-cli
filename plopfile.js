@@ -227,7 +227,7 @@ module.exports = function (plop)
                     return response.operation === 'substate';
                 },
                 type: 'confirm',
-                name: 'substateDynamic',
+                name: 'substateStatic',
                 message: 'Do you want to add the reducer statically\n(alternatively you can add it dynamically everywhere in your code)'
             }],
             actions: function(data) {
@@ -263,7 +263,7 @@ module.exports = function (plop)
                                 templateFile: 'templates/substate/substate.slice.tpl'
                             });
 
-                            if (data.substateActions)
+                            if (data.substateActions && data.substateActions.length)
                             {
                                 var actionArray = data.substateActions.split(',');
                                 for (var i = 0; i < actionArray.length; ++i)
@@ -276,6 +276,23 @@ module.exports = function (plop)
                                     type: 'add',
                                     path: getStoreDirectory() + '{{ camelCase substateName }}/{{ camelCase substateName }}.selectors-dispatchers.ts',
                                     templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
+                                });
+                            }
+
+                            if (data.substateStatic)
+                            {
+                                actions.push({
+                                    type: 'modify',
+                                    path: getStoreDirectory() + 'store.reducer.ts',
+                                    pattern: /(\s*\t*export function rootReducer)/gi,
+                                    template: '\n\nimport { {{ camelCase substateName }}Reducer } from \'./{{ camelCase substateName }}/{{ camelCase substateName }}.reducer.ts\';$1'
+                                });
+
+                                actions.push({
+                                    type: 'modify',
+                                    path: getStoreDirectory() + 'store.reducer.ts',
+                                    pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\n\t\t{{ camelCase substateName }}: {{ camelCase substateName }}Reducer,$1'
                                 });
                             }
                         }
