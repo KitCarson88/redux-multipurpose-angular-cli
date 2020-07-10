@@ -139,21 +139,24 @@ module.exports = function (plop)
                 actions.push({
                     type: 'add',
                     path: '{{cwd}}/' + data.storeDir + '/store/index.ts',
-                    templateFile: 'templates/index.tpl'
+                    templateFile: 'templates/index.tpl',
+                    skipIfExists: true
                 });
 
                 if (data.enableEpics)
                     actions.push({
                         type: 'add',
                         path: '{{cwd}}/' + data.storeDir + '/store/epics.ts',
-                        templateFile: 'templates/epics.tpl'
+                        templateFile: 'templates/epics.tpl',
+                        skipIfExists: true
                     });
 
                 if (data.enableSagas)
                     actions.push({
                         type: 'add',
                         path: '{{cwd}}/' + data.storeDir + '/store/sagas.ts',
-                        templateFile: 'templates/sagas.tpl'
+                        templateFile: 'templates/sagas.tpl',
+                        skipIfExists: true
                     });
 
                 let appModuleFile = getSrcFileAbsolutePath('app.module');
