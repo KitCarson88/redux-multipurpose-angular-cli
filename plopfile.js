@@ -236,13 +236,6 @@ module.exports = function (plop)
                 when: function(response) {
                     return response.operation === 'substate' && response.substateWs;
                 },
-                type: 'input',
-                name: 'substateWsAction',
-                message: 'What is the name of data retrieve action?\n(Please insert it in camel case; e.g. getExamples, setExampleData, retrieveData, etc.)'
-            }, {
-                when: function(response) {
-                    return response.operation === 'substate' && response.substateWs;
-                },
                 type: 'confirm',
                 name: 'substateWsUseAdapter',
                 message: 'Do you want to use an adapter for your data? (Useful when you want data indexing and auto data ordering on retrieve)'
@@ -251,8 +244,15 @@ module.exports = function (plop)
                     return response.operation === 'substate' && response.substateWs;
                 },
                 type: 'input',
+                name: 'substateWsAction',
+                message: 'What is the name of data retrieve action?\n(Please insert it in camel case or with spaces; e.g. getExamples, setExampleData, retrieve data, etc.)'
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate' && response.substateWs;
+                },
+                type: 'input',
                 name: 'substateWsProvider',
-                message: 'Insert a call provider name. Please provide the same name if you want to add another call to the same provider.\n(Please use spaces instead of camel case, dash case, or other notations)'
+                message: 'Insert a provider name. Please provide the same name if you want to add another call to the same provider.\n(Please use spaces instead of camel case, dash case, or other notations)'
             }, {
                 when: function(response) {
                     return response.operation === 'substate';
