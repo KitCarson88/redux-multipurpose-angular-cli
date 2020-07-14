@@ -250,7 +250,7 @@ module.exports = function (plop)
                 when: function(response) {
                     return response.operation === 'substate' && response.substateWs;
                 },
-                type: 'confirm',
+                type: 'input',
                 name: 'substateWsProvider',
                 message: 'Insert a call provider name. Please provide the same name if you want to add another call to the same provider.\n(Please use spaces instead of camel case, dash case, or other notations)'
             }, {
@@ -370,6 +370,13 @@ module.exports = function (plop)
                                     path: storeDirectory + 'ws/ws.model.ts',
                                     pattern: /(\s*\t*\/\/Ws data: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
                                     template: '\n\t\'{{ camelCase substateWsName }}\',$1'
+                                });
+
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.slice.ts',
+                                    pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\n\t{ provide: {{pascalCase substateWsProvider}}Provider },$1'
                                 });
                             }
                         }

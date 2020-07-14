@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { {{ pascalCase substateName }}State, INITIAL_STATE_{{ constantCase substateName}} } from './{{ camelCase substateName}}.model';
+import { {{ pascalCase substateNoWsName }}State, INITIAL_STATE_{{ constantCase substateNoWsName}} } from './{{ camelCase substateNoWsName}}.model';
 
-const {{ camelCase substateName}}Slice = createSlice({
-    name: '{{ camelCase substateName}}',
-    initialState: INITIAL_STATE_{{ constantCase substateName}},
+const {{ camelCase substateNoWsName}}Slice = createSlice({
+    name: '{{ camelCase substateNoWsName}}',
+    initialState: INITIAL_STATE_{{ constantCase substateNoWsName}},
     reducers: {
         {{#each actionArray as |actionToAdd|}}
         {{camelCase actionToAdd}}(state: {{> stateType}}, action: PayloadAction) {
@@ -14,7 +14,7 @@ const {{ camelCase substateName}}Slice = createSlice({
     }
 });
 
-const { actions, reducer } = {{ camelCase substateName}}Slice;
+const { actions, reducer } = {{ camelCase substateNoWsName}}Slice;
 
-export const {{ camelCase substateName}}Reducer = reducer;
+export const {{ camelCase substateNoWsName}}Reducer = reducer;
 export const { {{#each actionArray as |actionToAdd|}}{{camelCase actionToAdd}}, {{/each}} } = actions;
