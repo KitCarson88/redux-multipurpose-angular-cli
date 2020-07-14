@@ -243,9 +243,16 @@ module.exports = function (plop)
                 when: function(response) {
                     return response.operation === 'substate' && response.substateWs;
                 },
-                type: 'input',
+                type: 'confirm',
                 name: 'substateWsUseAdapter',
                 message: 'Do you want to use an adapter for your data? (Useful when you want data indexing and auto data ordering on retrieve)'
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate' && response.substateWs;
+                },
+                type: 'confirm',
+                name: 'substateWsProvider',
+                message: 'Insert a call provider name. Please provide the same name if you want to add another call to the same provider.\n(Please use spaces instead of camel case, dash case, or other notations)'
             }, {
                 when: function(response) {
                     return response.operation === 'substate';
@@ -279,12 +286,12 @@ module.exports = function (plop)
 
                             actions.push({
                                 type: 'add',
-                                path: storeDirectory + '{{ camelCase substateNoWsName }}/{{ camelCase substateNoWsName }}.model.ts',
+                                path: storeDirectory + '{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.model.ts',
                                 templateFile: 'templates/substate/substate.model.tpl'
                             });
                             actions.push({
                                 type: 'add',
-                                path: storeDirectory + '{{ camelCase substateNoWsName }}/{{ camelCase substateNoWsName }}.slice.ts',
+                                path: storeDirectory + '{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.slice.ts',
                                 templateFile: 'templates/substate/substate.slice.tpl'
                             });
 
@@ -299,7 +306,7 @@ module.exports = function (plop)
 
                                 actions.push({
                                     type: 'add',
-                                    path: storeDirectory + '{{ camelCase substateNoWsName }}/{{ camelCase substateNoWsName }}.selectors-dispatchers.ts',
+                                    path: storeDirectory + '{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers.ts',
                                     templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
                                 });
                             }
@@ -310,14 +317,14 @@ module.exports = function (plop)
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
                                     pattern: /(\s*\t*export function rootReducer)/gi,
-                                    template: '\nimport { {{ camelCase substateNoWsName }}Reducer } from \'./{{ camelCase substateNoWsName }}/{{ camelCase substateNoWsName }}.reducer.ts\';$1'
+                                    template: '\nimport { {{ dashCase substateNoWsName }}Reducer } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.reducer.ts\';$1'
                                 });
 
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
                                     pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer,$1'
+                                    template: '\n\t\t{{ dashCase substateNoWsName }}: {{ dashCase substateNoWsName }}Reducer,$1'
                                 });
                             }
                         }
@@ -344,6 +351,27 @@ module.exports = function (plop)
                                 templateFile: 'templates/ws-substate/ws.slice.tpl',
                                 abortOnFail: false
                             });
+
+                            actions.push({
+                                type: 'add',
+                                path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
+                                templateFile: 'templates/ws.provider.tpl',
+                                abortOnFail: false
+                            });
+
+                            if (data.substateWsUseAdapter)
+                            {
+
+                            }
+                            else
+                            {
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.model.ts',
+                                    pattern: /(\s*\t*\/\/Ws data: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\n\t\'{{ dashCase substateWsName }}\',$1'
+                                });
+                            }
                         }
                         else
                         {
