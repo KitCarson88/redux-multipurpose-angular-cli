@@ -195,16 +195,23 @@ module.exports = function (plop)
                 when: function(response) {
                     return response.operation === 'substate';
                 },
-                type: 'input',
-                name: 'substateName',
-                message: 'Name? (Please use spaces instead of camel case, dash case, or other notations)'
-            }, {
-                when: function(response) {
-                    return response.operation === 'substate';
-                },
                 type: 'confirm',
                 name: 'substateWs',
                 message: 'Is it a web service wrapper state?'
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate' && !response.substateWs;
+                },
+                type: 'input',
+                name: 'substateNoWsName',
+                message: 'Name? (Please use spaces instead of camel case, dash case, or other notations)'
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate' && response.substateWs;
+                },
+                type: 'input',
+                name: 'substateWsName',
+                message: 'Data name? (Please use spaces instead of camel case, dash case, or other notations)'
             }, {
                 when: function(response) {
                     return response.operation === 'substate' && !response.substateWs;
@@ -220,11 +227,25 @@ module.exports = function (plop)
                 ]
             }, {
                 when: function(response) {
-                    return response.operation === 'substate';
+                    return response.operation === 'substate' && !response.substateWs;
                 },
                 type: 'input',
-                name: 'substateActions',
+                name: 'substateNoWsActions',
                 message: 'Do you want to add some actions?\n(Please insert them in camel case, or with spaces, separated by comma; or leave it blank to skip this step)'
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate' && response.substateWs;
+                },
+                type: 'input',
+                name: 'substateWsActions',
+                message: 'What is the name of data retrieve action?\n(Please insert it in camel case; e.g. getExamples, setExampleData, retrieveData, etc.)'
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate' && response.substateWs;
+                },
+                type: 'input',
+                name: 'substateWsUseAdapter',
+                message: 'Do you want to use an adapter for your data? (Useful when you want data indexing and auto data ordering on retrieve)'
             }, {
                 when: function(response) {
                     return response.operation === 'substate';
@@ -235,12 +256,13 @@ module.exports = function (plop)
             }],
             actions: function(data) {
                 var actions = [];
+                var storeDirectory = getStoreDirectory();
 
                 if (data.operation === 'substate')
                 {
                     if (!data.substateWs)
                     {
-                        if (data.substateName && data.substateType)
+                        if (data.substateNoWsName && data.substateType)
                         {
                             if (data.substateType === 'object')
                                 data.substateObject = true;
@@ -257,27 +279,27 @@ module.exports = function (plop)
 
                             actions.push({
                                 type: 'add',
-                                path: getStoreDirectory() + '{{ camelCase substateName }}/{{ camelCase substateName }}.model.ts',
+                                path: storeDirectory + '{{ camelCase substateNoWsName }}/{{ camelCase substateNoWsName }}.model.ts',
                                 templateFile: 'templates/substate/substate.model.tpl'
                             });
                             actions.push({
                                 type: 'add',
-                                path: getStoreDirectory() + '{{ camelCase substateName }}/{{ camelCase substateName }}.slice.ts',
+                                path: storeDirectory + '{{ camelCase substateNoWsName }}/{{ camelCase substateNoWsName }}.slice.ts',
                                 templateFile: 'templates/substate/substate.slice.tpl'
                             });
 
-                            if (data.substateActions && data.substateActions.length)
+                            if (data.substateNoWsName && data.substateNoWsName.length)
                             {
-                                var actionArray = data.substateActions.split(',');
+                                var actionArray = data.substateNoWsName.split(',');
                                 for (var i = 0; i < actionArray.length; ++i)
                                 actionArray[i] = actionArray[i].trim();
                                     data.actionArray = actionArray;
 
-                                plop.setPartial('stateType', pascalCase(data.substateName) + 'State');
+                                plop.setPartial('stateType', pascalCase(data.substateNoWsName) + 'State');
 
                                 actions.push({
                                     type: 'add',
-                                    path: getStoreDirectory() + '{{ camelCase substateName }}/{{ camelCase substateName }}.selectors-dispatchers.ts',
+                                    path: storeDirectory + '{{ camelCase substateNoWsName }}/{{ camelCase substateNoWsName }}.selectors-dispatchers.ts',
                                     templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
                                 });
                             }
@@ -286,18 +308,46 @@ module.exports = function (plop)
                             {
                                 actions.push({
                                     type: 'modify',
-                                    path: getStoreDirectory() + 'store.reducer.ts',
+                                    path: storeDirectory + 'store.reducer.ts',
                                     pattern: /(\s*\t*export function rootReducer)/gi,
-                                    template: '\n\nimport { {{ camelCase substateName }}Reducer } from \'./{{ camelCase substateName }}/{{ camelCase substateName }}.reducer.ts\';$1'
+                                    template: '\nimport { {{ camelCase substateNoWsName }}Reducer } from \'./{{ camelCase substateNoWsName }}/{{ camelCase substateNoWsName }}.reducer.ts\';$1'
                                 });
 
                                 actions.push({
                                     type: 'modify',
-                                    path: getStoreDirectory() + 'store.reducer.ts',
+                                    path: storeDirectory + 'store.reducer.ts',
                                     pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '\n\t\t{{ camelCase substateName }}: {{ camelCase substateName }}Reducer,$1'
+                                    template: '\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer,$1'
                                 });
                             }
+                        }
+                    }
+                    else
+                    {
+                        if (data.substateStatic)
+                        {
+                            actions.push({
+                                type: 'add',
+                                path: storeDirectory + 'ws/ws.model.ts',
+                                templateFile: 'templates/ws-substate/ws.model.tpl',
+                                abortOnFail: false
+                            });
+                            actions.push({
+                                type: 'add',
+                                path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
+                                templateFile: 'templates/ws-substate/ws.selectors-dispatchers.tpl',
+                                abortOnFail: false
+                            });
+                            actions.push({
+                                type: 'add',
+                                path: storeDirectory + 'ws/ws.slice.ts',
+                                templateFile: 'templates/ws-substate/ws.slice.tpl',
+                                abortOnFail: false
+                            });
+                        }
+                        else
+                        {
+
                         }
                     }
                 }
