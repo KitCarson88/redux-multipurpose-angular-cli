@@ -375,6 +375,13 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'ws/ws.slice.ts',
+                                    pattern: /(\s*\t*\/\/Manually inject providers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\nimport { {{ pascalCase substateWsProvider }}Provider } from \'../../providers\';$1'
+                                });
+
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.slice.ts',
                                     pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
                                     template: '\n\t{ provide: {{pascalCase substateWsProvider}}Provider },$1'
                                 });
