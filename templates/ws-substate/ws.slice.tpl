@@ -7,8 +7,9 @@ import {
     INITIAL_STATE_WEB_SERVICES
 } from './ws.model';
 
+//Ws providers imports: PLEASE DON'T DELETE THIS PLACEHOLDER
 
-//Manually inject providers: PLEASE DON'T DELETE THIS PLACEHOLDER
+//Manually inject providers
 const wsProvidersInjector = Injector.create({ providers: [
     //Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER
 ]});

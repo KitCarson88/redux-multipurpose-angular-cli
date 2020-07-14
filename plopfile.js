@@ -237,7 +237,7 @@ module.exports = function (plop)
                     return response.operation === 'substate' && response.substateWs;
                 },
                 type: 'input',
-                name: 'substateWsActions',
+                name: 'substateWsAction',
                 message: 'What is the name of data retrieve action?\n(Please insert it in camel case; e.g. getExamples, setExampleData, retrieveData, etc.)'
             }, {
                 when: function(response) {
@@ -355,7 +355,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'add',
                                 path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
-                                templateFile: 'templates/ws.provider.tpl',
+                                templateFile: 'templates/ws-substate/ws.provider.tpl',
                                 abortOnFail: false
                             });
 
@@ -374,9 +374,16 @@ module.exports = function (plop)
 
                                 actions.push({
                                     type: 'modify',
+                                    path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
+                                    pattern: /(constructor\(\) {})/gi,
+                                    templateFile: 'templates/ws-substate/ws.provider-call.tpl'
+                                });
+
+                                actions.push({
+                                    type: 'modify',
                                     path: storeDirectory + 'ws/ws.slice.ts',
-                                    pattern: /(\s*\t*\/\/Manually inject providers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '\nimport { {{ pascalCase substateWsProvider }}Provider } from \'../../providers\';$1'
+                                    pattern: /(\/\/Ws providers imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: 'import { {{ pascalCase substateWsProvider }}Provider } from \'../../providers\';\n$1'
                                 });
 
                                 actions.push({
@@ -384,6 +391,13 @@ module.exports = function (plop)
                                     path: storeDirectory + 'ws/ws.slice.ts',
                                     pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
                                     template: '\n\t{ provide: {{pascalCase substateWsProvider}}Provider },$1'
+                                });
+
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.slice.ts',
+                                    pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER\s*\t*\n*]*}*\)*;*)/gi,
+                                    template: '$1\nconst {{camelCase substateWsProvider}}Provider = wsProvidersInjector.get({{pascalCase substateWsProvider}}Provider);'
                                 });
                             }
                         }
