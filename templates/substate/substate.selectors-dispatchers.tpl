@@ -10,9 +10,11 @@ import {
 @Injectable()
 export class {{ pascalCase substateName}}Actions
 {
-    {{#each actionArray as |actionToAdd|}}@dispatch()
+    {{#each actionArray as |actionToAdd|}}
+    @dispatch()
     {{camelCase actionToAdd}} = () => {
         return {{camelCase actionToAdd}}Action();
     };
+    
     {{/each}}
 }

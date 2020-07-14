@@ -297,10 +297,10 @@ module.exports = function (plop)
 
                             if (data.substateNoWsName && data.substateNoWsName.length)
                             {
-                                var actionArray = data.substateNoWsName.split(',');
+                                var actionArray = data.substateNoWsActions.split(',');
                                 for (var i = 0; i < actionArray.length; ++i)
-                                actionArray[i] = actionArray[i].trim();
-                                    data.actionArray = actionArray;
+                                    actionArray[i] = actionArray[i].trim();
+                                data.actionArray = actionArray;
 
                                 plop.setPartial('stateType', pascalCase(data.substateNoWsName) + 'State');
 
@@ -317,14 +317,14 @@ module.exports = function (plop)
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
                                     pattern: /(\s*\t*export function rootReducer)/gi,
-                                    template: '\nimport { {{ dashCase substateNoWsName }}Reducer } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.reducer.ts\';$1'
+                                    template: '\nimport { {{ camelCase substateNoWsName }}Reducer } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.reducer.ts\';$1'
                                 });
 
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
                                     pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '\n\t\t{{ dashCase substateNoWsName }}: {{ dashCase substateNoWsName }}Reducer,$1'
+                                    template: '\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer,$1'
                                 });
                             }
                         }
@@ -369,7 +369,7 @@ module.exports = function (plop)
                                     type: 'modify',
                                     path: storeDirectory + 'ws/ws.model.ts',
                                     pattern: /(\s*\t*\/\/Ws data: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '\n\t\'{{ dashCase substateWsName }}\',$1'
+                                    template: '\n\t\'{{ camelCase substateWsName }}\',$1'
                                 });
                             }
                         }
