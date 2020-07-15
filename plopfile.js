@@ -314,7 +314,7 @@ module.exports = function (plop)
                                 templateFile: 'templates/substate/substate.slice.tpl'
                             });
 
-                            if (data.substateNoWsName && data.substateNoWsName.length)
+                            if (data.substateNoWsActions && data.substateNoWsActions.length)
                             {
                                 var actionArray = data.substateNoWsActions.split(',');
                                 for (var i = 0; i < actionArray.length; ++i)
@@ -327,6 +327,26 @@ module.exports = function (plop)
                                     type: 'add',
                                     path: storeDirectory + '{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers.ts',
                                     templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
+                                });
+
+                                actions.push({
+                                    type: 'append',
+                                    path: storeDirectory + 'index.ts',
+                                    template: 'export { {{ pascalCase substateNoWsName}}Actions } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers\';'
+                                });
+
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.module.ts',
+                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '{{ pascalCase substateNoWsName}}Actions\n\t$1'
+                                });
+
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.module.ts',
+                                    pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '{{ pascalCase substateNoWsName}}Actions\n\t$1'
                                 });
                             }
 
