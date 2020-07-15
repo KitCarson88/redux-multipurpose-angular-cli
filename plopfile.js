@@ -73,6 +73,12 @@ function verifyInAppModuleImport(pathFile)
     }
 }
 
+function verifyIfStringInFileExists(value, pathFile)
+{
+    var file = fs.readFileSync(pathFile).toString();
+    return file.indexOf(value) >= 0;
+}
+
 function pascalCase(value)
 {
     var tokens = value.split(' ');
@@ -405,12 +411,22 @@ module.exports = function (plop)
                                         template: 'export { {{ pascalCase substateWsProvider }}Provider } from \'./{{ dashCase substateWsProvider }}\';'
                                     });
 
-                                    actions.push({
-                                        type: 'modify',
-                                        path: storeDirectory + 'ws/ws.slice.ts',
-                                        pattern: /(\/\/Ws providers imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                        template: 'import { {{ pascalCase substateWsProvider }}Provider } from \'../../providers\';\n$1'
-                                    });
+                                    //If providers import exists, add a new one
+                                    var slicePath = getSrcFileAbsolutePath('ws.slice.ts');
+                                    if (slicePath && verifyIfStringInFileExists('../../providers', slicePath))
+                                        actions.push({
+                                            type: 'modify',
+                                            path: storeDirectory + 'ws/ws.slice.ts',
+                                            pattern: /( } from \'..\/..\/providers)/gi,
+                                            template: ', {{ pascalCase substateWsProvider }}Provider$1'
+                                        });
+                                    else
+                                        actions.push({
+                                            type: 'modify',
+                                            path: storeDirectory + 'ws/ws.slice.ts',
+                                            pattern: /(\/\/Ws providers imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                            template: 'import { {{ pascalCase substateWsProvider }}Provider } from \'../../providers\';\n$1'
+                                        });
     
                                     actions.push({
                                         type: 'modify',
