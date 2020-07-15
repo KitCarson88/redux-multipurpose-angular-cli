@@ -30,3 +30,6 @@ const wsSlice = createSlice({
         //Ws prepare thunks: PLEASE DON'T DELETE THIS PLACEHOLDER
     ])
 });
+
+export const wsReducer = wsSlice.reducer;
+export const resetWsData = wsSlice.actions.resetWsData;
