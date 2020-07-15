@@ -417,15 +417,15 @@ module.exports = function (plop)
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'ws/ws.slice.ts',
-                                            pattern: /( } from \'..\/..\/providers)/gi,
-                                            template: ', {{ pascalCase substateWsProvider }}Provider$1'
+                                            pattern: /(\n} from \'..\/..\/providers)/gi,
+                                            template: ',\n\t{{ pascalCase substateWsProvider }}Provider$1'
                                         });
                                     else
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'ws/ws.slice.ts',
                                             pattern: /(\/\/Ws providers imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                            template: 'import { {{ pascalCase substateWsProvider }}Provider } from \'../../providers\';\n$1'
+                                            template: 'import {\n\t{{ pascalCase substateWsProvider }}Provider\n} from \'../../providers\';\n$1'
                                         });
     
                                     actions.push({
