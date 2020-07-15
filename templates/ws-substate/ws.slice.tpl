@@ -13,3 +13,20 @@ import {
 const wsProvidersInjector = Injector.create({ providers: [
     //Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER
 ]});
+
+//Thunks
+//Ws thunks: PLEASE DON'T DELETE THIS PLACEHOLDER
+
+//Ws actions and reducers
+const wsSlice = createSlice({
+    name: 'ws',
+    initialState: INITIAL_STATE_WEB_SERVICES,
+    reducers: {
+        resetWsData(state, action: PayloadAction<any>) {
+            state = INITIAL_STATE_WEB_SERVICES;
+        }
+    },
+    extraReducers: prepareThunkActionReducers([
+        //Ws prepare thunks: PLEASE DON'T DELETE THIS PLACEHOLDER
+    ])
+});
