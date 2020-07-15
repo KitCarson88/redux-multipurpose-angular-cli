@@ -6,10 +6,10 @@ import {
     {{#each actionArray as |actionToAdd|}}
     {{camelCase actionToAdd}} as {{camelCase actionToAdd}}Action,
     {{/each}}
-} from './{{ camelCase substateName}}.slice';
+} from './{{ camelCase substateNoWsName}}.slice';
 
 @Injectable()
-export class {{ pascalCase substateName}}Actions
+export class {{ pascalCase substateNoWsName}}Actions
 {
     {{#each actionArray as |actionToAdd|}}
     @dispatch()

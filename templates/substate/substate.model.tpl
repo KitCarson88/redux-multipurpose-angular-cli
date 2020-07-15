@@ -1,15 +1,15 @@
 {{#if substateObject}}
-export interface {{ pascalCase substateName }}State
+export interface {{ pascalCase substateNoWsName }}State
 {
 
 }
 
-export const INITIAL_STATE_{{ constantCase substateName}}: {{ pascalCase substateName }}State = {
+export const INITIAL_STATE_{{ constantCase substateNoWsName}}: {{ pascalCase substateNoWsName }}State = {
 
 };
 {{/if}}
 {{#if substateNotObject}}
-export type {{ pascalCase substateName }}State = {{substateType}};
+export type {{ pascalCase substateNoWsName }}State = {{substateType}};
 
-export const INITIAL_STATE_{{ constantCase substateName}}: {{ pascalCase substateName }}State = {{substateInitalValue}};
+export const INITIAL_STATE_{{ constantCase substateNoWsName}}: {{ pascalCase substateNoWsName }}State = {{substateInitalValue}};
 {{/if}}

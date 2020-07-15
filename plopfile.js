@@ -335,8 +335,8 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
-                                    pattern: /(\s*\t*export function rootReducer)/gi,
-                                    template: '\nimport { {{ camelCase substateNoWsName }}Reducer } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.reducer.ts\';$1'
+                                    pattern: /(\nexport function rootReducer)/gi,
+                                    template: 'import { {{ camelCase substateNoWsName }}Reducer } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.reducer.ts\';\n$1'
                                 });
 
                                 actions.push({
