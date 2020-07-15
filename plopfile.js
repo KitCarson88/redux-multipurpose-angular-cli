@@ -267,11 +267,18 @@ module.exports = function (plop)
                 message: 'Insert a provider name. Please provide the same name if you want to add another call to the same provider.\n(Please use spaces instead of camel case, dash case, or other notations)'
             }, {
                 when: function(response) {
-                    return response.operation === 'substate';
+                    return response.operation === 'substate' && !response.substateWs;
                 },
                 type: 'confirm',
-                name: 'substateStatic',
+                name: 'substateNoWsStatic',
                 message: 'Do you want to add the reducer statically\n(alternatively you can add it dynamically everywhere in your code)'
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate' && response.substateWs;
+                },
+                type: 'confirm',
+                name: 'substateWsStatic',
+                message: 'Do you want to insert redux wrapper statically in ws substate?\n(alternatively you can add it dynamically everywhere in your code as new substate)'
             }],
             actions: function(data) {
                 var actions = [];
@@ -323,7 +330,7 @@ module.exports = function (plop)
                                 });
                             }
 
-                            if (data.substateStatic)
+                            if (data.substateNoWsStatic)
                             {
                                 actions.push({
                                     type: 'modify',
@@ -343,7 +350,7 @@ module.exports = function (plop)
                     }
                     else
                     {
-                        if (data.substateStatic)
+                        if (data.substateWsStatic)
                         {
                             actions.push({
                                 type: 'add',
