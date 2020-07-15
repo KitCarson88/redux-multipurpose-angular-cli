@@ -84,6 +84,12 @@ function pascalCase(value)
     return tokens.join('');
 }
 
+function dashCase(value)
+{
+    var tokens = value.split(' ');
+    return tokens.join('-');
+}
+
 module.exports = function (plop)
 {
     //Verify if store module exists and it's contained under src/store path
@@ -352,6 +358,11 @@ module.exports = function (plop)
                                 abortOnFail: false
                             });
 
+                            //Set a flag before provider creation to detect first initialization
+                            var providerCreation = false;
+                            if (!getSrcFileRelativePath(dashCase(data.substateWsProvider)))
+                                providerCreation = true;
+
                             actions.push({
                                 type: 'add',
                                 path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
@@ -379,25 +390,42 @@ module.exports = function (plop)
                                     templateFile: 'templates/ws-substate/ws.provider-call.tpl'
                                 });
 
+                                if (providerCreation)
+                                {
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'ws/ws.slice.ts',
+                                        pattern: /(\/\/Ws providers imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                        template: 'import { {{ pascalCase substateWsProvider }}Provider } from \'../../providers\';\n$1'
+                                    });
+    
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'ws/ws.slice.ts',
+                                        pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                        template: '\n\t{ provide: {{ pascalCase substateWsProvider }}Provider },$1'
+                                    });
+    
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'ws/ws.slice.ts',
+                                        pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER\s*\t*\n*]*}*\)*;*)/gi,
+                                        template: '$1\nconst {{camelCase substateWsProvider}}Provider = wsProvidersInjector.get({{pascalCase substateWsProvider}}Provider);'
+                                    });
+                                }
+
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'ws/ws.slice.ts',
-                                    pattern: /(\/\/Ws providers imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: 'import { {{ pascalCase substateWsProvider }}Provider } from \'../../providers\';\n$1'
+                                    pattern: /(\s*\t*\/\/Ws thunks: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\nexport const {{ camelCase substateWsAction }}Thunk = prepareThunk(\'ws\', \'{{ camelCase substateWsAction }}\', {{camelCase substateWsProvider}}Provider.{{ camelCase substateWsAction }});$1'
                                 });
 
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'ws/ws.slice.ts',
-                                    pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '\n\t{ provide: {{pascalCase substateWsProvider}}Provider },$1'
-                                });
-
-                                actions.push({
-                                    type: 'modify',
-                                    path: storeDirectory + 'ws/ws.slice.ts',
-                                    pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER\s*\t*\n*]*}*\)*;*)/gi,
-                                    template: '$1\nconst {{camelCase substateWsProvider}}Provider = wsProvidersInjector.get({{pascalCase substateWsProvider}}Provider);'
+                                    pattern: /(\s*\t*\/\/Ws prepare thunks: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\n\t\t{ thunk: {{ camelCase substateWsAction }}Thunk, substate: \'{{ camelCase substateWsName }}\', adapter: null },$1'
                                 });
                             }
                         }
