@@ -372,6 +372,11 @@ module.exports = function (plop)
                     {
                         if (data.substateWsStatic)
                         {
+                            //Set a flag before ws substate creation to detect first initialization
+                            var wsCreation = false;
+                            if (!getSrcFileRelativePath('ws.selectors-dispatchers.ts'))
+                                wsCreation = true;
+
                             actions.push({
                                 type: 'add',
                                 path: storeDirectory + 'ws/ws.model.ts',
@@ -390,6 +395,29 @@ module.exports = function (plop)
                                 templateFile: 'templates/ws-substate/ws.slice.tpl',
                                 abortOnFail: false
                             });
+
+                            if (wsCreation)
+                            {
+                                actions.push({
+                                    type: 'append',
+                                    path: storeDirectory + 'index.ts',
+                                    template: 'export { WsActions } from \'./ws/ws.selectors-dispatchers\';'
+                                });
+
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.module.ts',
+                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: 'WsActions\n\t$1'
+                                });
+    
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.module.ts',
+                                    pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: 'WsActions\n\t$1'
+                                });
+                            }
 
                             //Set a flag before provider creation to detect first initialization
                             var providerCreation = false;
