@@ -339,14 +339,14 @@ module.exports = function (plop)
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
                                     pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '{{ pascalCase substateNoWsName}}Actions\n\t$1'
+                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
                                 });
 
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
                                     pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '{{ pascalCase substateNoWsName}}Actions\n\t$1'
+                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
                                 });
                             }
 
@@ -408,14 +408,14 @@ module.exports = function (plop)
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
                                     pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: 'WsActions\n\t$1'
+                                    template: 'WsActions,\n\t$1'
                                 });
     
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
                                     pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: 'WsActions\n\t$1'
+                                    template: 'WsActions,\n\t$1'
                                 });
                             }
 
