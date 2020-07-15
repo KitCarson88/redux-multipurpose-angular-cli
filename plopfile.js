@@ -370,6 +370,13 @@ module.exports = function (plop)
                                 abortOnFail: false
                             });
 
+                            actions.push({
+                                type: 'add',
+                                path: '{{cwd}}/src/providers/index.ts',
+                                template: '',
+                                abortOnFail: false
+                            });
+
                             if (data.substateWsUseAdapter)
                             {
 
@@ -392,6 +399,12 @@ module.exports = function (plop)
 
                                 if (providerCreation)
                                 {
+                                    actions.push({
+                                        type: 'append',
+                                        path: '{{cwd}}/src/providers/index.ts',
+                                        template: 'export { {{ pascalCase substateWsProvider }}Provider } from \'./{{ dashCase substateWsProvider }}\';'
+                                    });
+
                                     actions.push({
                                         type: 'modify',
                                         path: storeDirectory + 'ws/ws.slice.ts',
