@@ -421,6 +421,22 @@ module.exports = function (plop)
                             //If ws files are just created
                             if (wsCreation)
                             {
+                                //Append generic substate reducer import to store
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.reducer.ts',
+                                    pattern: /(\nexport function rootReducer)/gi,
+                                    template: 'import { wsReducer } from \'./ws/ws.reducer.ts\';\n$1'
+                                });
+
+                                //Append generic substate reducer
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.reducer.ts',
+                                    pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\n\t\tws: wsReducer,$1'
+                                });
+
                                 //Append Ws actions class to store index
                                 actions.push({
                                     type: 'append',
