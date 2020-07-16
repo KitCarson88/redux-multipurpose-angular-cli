@@ -286,6 +286,7 @@ module.exports = function (plop)
 
                 if (data.operation === 'substate')
                 {
+                    //Generic substate creation logics
                     if (!data.substateWs)
                     {
                         if (data.substateNoWsName && data.substateType)
@@ -303,17 +304,20 @@ module.exports = function (plop)
                                     data.substateInitalValue = 'null';
                             }
 
+                            //Create generic substate model
                             actions.push({
                                 type: 'add',
                                 path: storeDirectory + '{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.model.ts',
                                 templateFile: 'templates/substate/substate.model.tpl'
                             });
+                            //Create generic substate slice
                             actions.push({
                                 type: 'add',
                                 path: storeDirectory + '{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.slice.ts',
                                 templateFile: 'templates/substate/substate.slice.tpl'
                             });
 
+                            //Actions creation logics
                             if (data.substateNoWsActions && data.substateNoWsActions.length)
                             {
                                 var actionArray = data.substateNoWsActions.split(',');
@@ -328,18 +332,21 @@ module.exports = function (plop)
 
                                 plop.setPartial('stateType', pascalCase(data.substateNoWsName) + 'State');
 
+                                //Create generic substate selectors and dispatchers file
                                 actions.push({
                                     type: 'add',
                                     path: storeDirectory + '{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers.ts',
                                     templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
                                 });
 
+                                //Append actions class to store index
                                 actions.push({
                                     type: 'append',
                                     path: storeDirectory + 'index.ts',
                                     template: 'export { {{ pascalCase substateNoWsName}}Actions } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers\';'
                                 });
 
+                                //Add actions class import to store module
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
@@ -347,6 +354,7 @@ module.exports = function (plop)
                                     template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
                                 });
 
+                                //Add actions class to store module provide
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
@@ -355,8 +363,10 @@ module.exports = function (plop)
                                 });
                             }
 
+                            //Static generic substate reducer add logics
                             if (data.substateNoWsStatic)
                             {
+                                //Append generic substate reducer import to store
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
@@ -364,6 +374,7 @@ module.exports = function (plop)
                                     template: 'import { {{ camelCase substateNoWsName }}Reducer } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.reducer.ts\';\n$1'
                                 });
 
+                                //Append generic substate reducer
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
@@ -373,8 +384,9 @@ module.exports = function (plop)
                             }
                         }
                     }
-                    else
+                    else    //Ws substate creation logics
                     {
+                        //Static ws substate creation logics
                         if (data.substateWsStatic)
                         {
                             //Set a flag before ws substate creation to detect first initialization
@@ -382,18 +394,23 @@ module.exports = function (plop)
                             if (!getSrcFileRelativePath('ws.selectors-dispatchers.ts'))
                                 wsCreation = true;
 
+                            //Add ws model file
                             actions.push({
                                 type: 'add',
                                 path: storeDirectory + 'ws/ws.model.ts',
                                 templateFile: 'templates/ws-substate/ws.model.tpl',
                                 abortOnFail: false
                             });
+
+                            //Add ws selectors and dispatchers file
                             actions.push({
                                 type: 'add',
                                 path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
                                 templateFile: 'templates/ws-substate/ws.selectors-dispatchers.tpl',
                                 abortOnFail: false
                             });
+
+                            //Add ws slices file
                             actions.push({
                                 type: 'add',
                                 path: storeDirectory + 'ws/ws.slice.ts',
@@ -401,14 +418,17 @@ module.exports = function (plop)
                                 abortOnFail: false
                             });
 
+                            //If ws files are just created
                             if (wsCreation)
                             {
+                                //Append Ws actions class to store index
                                 actions.push({
                                     type: 'append',
                                     path: storeDirectory + 'index.ts',
                                     template: 'export { WsActions } from \'./ws/ws.selectors-dispatchers\';'
                                 });
 
+                                //Append Ws actions class import to store module
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
@@ -416,6 +436,7 @@ module.exports = function (plop)
                                     template: 'WsActions,\n\t$1'
                                 });
     
+                                //Append Ws actions class provide to store module
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
@@ -429,6 +450,7 @@ module.exports = function (plop)
                             if (!getSrcFileRelativePath(dashCase(data.substateWsProvider)))
                                 providerCreation = true;
 
+                            //Create new provider class if doesn't exist yet
                             actions.push({
                                 type: 'add',
                                 path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
@@ -436,6 +458,7 @@ module.exports = function (plop)
                                 abortOnFail: false
                             });
 
+                            //Create provider index file if doesn't exist yet
                             actions.push({
                                 type: 'add',
                                 path: '{{cwd}}/src/providers/index.ts',
@@ -443,12 +466,118 @@ module.exports = function (plop)
                                 abortOnFail: false
                             });
 
+                            //Add provider call to provider
+                            actions.push({
+                                type: 'modify',
+                                path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
+                                pattern: /(constructor\(\) {})/gi,
+                                templateFile: 'templates/ws-substate/ws.provider-call.tpl'
+                            });
+
+                            if (providerCreation)
+                            {
+                                //Append provider to index
+                                actions.push({
+                                    type: 'append',
+                                    path: '{{cwd}}/src/providers/index.ts',
+                                    template: 'export { {{ pascalCase substateWsProvider }}Provider } from \'./{{ dashCase substateWsProvider }}\';'
+                                });
+
+                                //If providers import exists, add a new one
+                                var slicePath = getSrcFileAbsolutePath('ws.slice.ts');
+                                if (slicePath && verifyIfStringInFileExists('../../providers', slicePath))
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'ws/ws.slice.ts',
+                                        pattern: /(\n} from \'..\/..\/providers)/gi,
+                                        template: ',\n\t{{ pascalCase substateWsProvider }}Provider$1'
+                                    });
+                                else
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'ws/ws.slice.ts',
+                                        pattern: /(\/\/Ws providers imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                        template: 'import {\n\t{{ pascalCase substateWsProvider }}Provider\n} from \'../../providers\';\n$1'
+                                    });
+
+                                //Append provider provide to ws slice
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.slice.ts',
+                                    pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\n\t{ provide: {{ pascalCase substateWsProvider }}Provider },$1'
+                                });
+
+                                //Append provider instance to ws slice
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.slice.ts',
+                                    pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER\s*\t*\n*]*}*\)*;*)/gi,
+                                    template: '$1\nconst {{camelCase substateWsProvider}}Provider = wsProvidersInjector.get({{pascalCase substateWsProvider}}Provider);'
+                                });
+                            }
+
+                            //Append new thunk to ws slice
+                            actions.push({
+                                type: 'modify',
+                                path: storeDirectory + 'ws/ws.slice.ts',
+                                pattern: /(\s*\t*\/\/Ws thunks: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                template: '\nexport const {{ camelCase substateWsAction }}Thunk = prepareThunk(\'ws\', \'{{ camelCase substateWsAction }}\', {{camelCase substateWsProvider}}Provider.{{ camelCase substateWsAction }});$1'
+                            });
+
+                            //Ws substate data adapter logics
                             if (data.substateWsUseAdapter)
                             {
-                                
+                                //Create ws substate data dto
+                                actions.push({
+                                    type: 'add',
+                                    path: '{{cwd}}/src/entities/dto/{{ camelCase substateWsName }}DTO.ts',
+                                    templateFile: 'templates/ws-substate/ws.dto.tpl'
+                                });
+
+                                //Add dto import to ws substate model
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.model.ts',
+                                    pattern: /(\/\/Dto imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: 'import { {{ pascalCase substateWsName }}DTO } from \'../../entities/dto/{{ camelCase substateWsName }}DTO\';\n$1'
+                                });
+
+                                //Add new data adapter to ws model
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.model.ts',
+                                    pattern: /(export const INITIAL_STATE_WEB_SERVICES)/gi,
+                                    templateFile: 'templates/ws-substate/ws.adapter.tpl'                               
+                                });
+
+                                //Append new data to ws model
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.model.ts',
+                                    pattern: /(\s*\t*\/\/Ws data: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\n\t{ \'{{ camelCase substateWsName }}Adapter\': { data: {{ camelCase substateWsName }}Adapter.getInitialState() }},$1'
+                                });
+
+                                //Append adapter import to ws slice
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.slice.ts',
+                                    pattern: /(INITIAL_STATE_WEB_SERVICES\n} from '.\/ws.model')/gi,
+                                    template: '{{ camelCase substateWsName }}Adapter,\n\t$1'
+                                });
+
+                                //Append substate reducer to ws slice
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.slice.ts',
+                                    pattern: /(\s*\t*\/\/Ws prepare thunks: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\n\t\t{ thunk: {{ camelCase substateWsAction }}Thunk, substate: \'{{ camelCase substateWsName }}\', adapter: {{ camelCase substateWsName }}Adapter },$1'
+                                });
                             }
-                            else
+                            else    //Not using ws substate data adapter logics
                             {
+                                //Append new data to ws model
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'ws/ws.model.ts',
@@ -456,60 +585,7 @@ module.exports = function (plop)
                                     template: '\n\t\'{{ camelCase substateWsName }}\',$1'
                                 });
 
-                                actions.push({
-                                    type: 'modify',
-                                    path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
-                                    pattern: /(constructor\(\) {})/gi,
-                                    templateFile: 'templates/ws-substate/ws.provider-call.tpl'
-                                });
-
-                                if (providerCreation)
-                                {
-                                    actions.push({
-                                        type: 'append',
-                                        path: '{{cwd}}/src/providers/index.ts',
-                                        template: 'export { {{ pascalCase substateWsProvider }}Provider } from \'./{{ dashCase substateWsProvider }}\';'
-                                    });
-
-                                    //If providers import exists, add a new one
-                                    var slicePath = getSrcFileAbsolutePath('ws.slice.ts');
-                                    if (slicePath && verifyIfStringInFileExists('../../providers', slicePath))
-                                        actions.push({
-                                            type: 'modify',
-                                            path: storeDirectory + 'ws/ws.slice.ts',
-                                            pattern: /(\n} from \'..\/..\/providers)/gi,
-                                            template: ',\n\t{{ pascalCase substateWsProvider }}Provider$1'
-                                        });
-                                    else
-                                        actions.push({
-                                            type: 'modify',
-                                            path: storeDirectory + 'ws/ws.slice.ts',
-                                            pattern: /(\/\/Ws providers imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                            template: 'import {\n\t{{ pascalCase substateWsProvider }}Provider\n} from \'../../providers\';\n$1'
-                                        });
-    
-                                    actions.push({
-                                        type: 'modify',
-                                        path: storeDirectory + 'ws/ws.slice.ts',
-                                        pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                        template: '\n\t{ provide: {{ pascalCase substateWsProvider }}Provider },$1'
-                                    });
-    
-                                    actions.push({
-                                        type: 'modify',
-                                        path: storeDirectory + 'ws/ws.slice.ts',
-                                        pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER\s*\t*\n*]*}*\)*;*)/gi,
-                                        template: '$1\nconst {{camelCase substateWsProvider}}Provider = wsProvidersInjector.get({{pascalCase substateWsProvider}}Provider);'
-                                    });
-                                }
-
-                                actions.push({
-                                    type: 'modify',
-                                    path: storeDirectory + 'ws/ws.slice.ts',
-                                    pattern: /(\s*\t*\/\/Ws thunks: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '\nexport const {{ camelCase substateWsAction }}Thunk = prepareThunk(\'ws\', \'{{ camelCase substateWsAction }}\', {{camelCase substateWsProvider}}Provider.{{ camelCase substateWsAction }});$1'
-                                });
-
+                                //Append substate reducer to ws slice
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'ws/ws.slice.ts',
