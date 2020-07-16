@@ -541,6 +541,22 @@ module.exports = function (plop)
                                 template: '\nexport const {{ camelCase substateWsAction }}Thunk = prepareThunk(\'ws\', \'{{ camelCase substateWsAction }}\', {{camelCase substateWsProvider}}Provider.{{ camelCase substateWsAction }});$1'
                             });
 
+                            //Append thunk import in ws selectors dispatchers file
+                            actions.push({
+                                type: 'modify',
+                                path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
+                                pattern: /(\/\/Thunks imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                template: '{{ camelCase substateWsAction }}Thunk,\n\t$1'
+                            });
+
+                            //Append new action to trigger thunk execution
+                            actions.push({
+                                type: 'modify',
+                                path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
+                                pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                templateFile: 'templates/ws-substate/ws.action.tpl'
+                            });
+
                             //Ws substate data adapter logics
                             if (data.substateWsUseAdapter)
                             {
@@ -589,6 +605,22 @@ module.exports = function (plop)
                                     path: storeDirectory + 'ws/ws.slice.ts',
                                     pattern: /(\s*\t*\/\/Ws prepare thunks: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
                                     template: '\n\t\t{ thunk: {{ camelCase substateWsAction }}Thunk, substate: \'{{ camelCase substateWsName }}\', adapter: {{ camelCase substateWsName }}Adapter },$1'
+                                });
+
+                                //Append adapter import to ws selectors dispatchers
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
+                                    pattern: /(\/\/Adapters imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: 'import { {{ camelCase substateWsName }}Adapter } from \'./ws.model\';\n$1'
+                                });
+
+                                //Append default with adapter selectors
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
+                                    pattern: /(\/\/Selectors: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    templateFile: 'templates/ws-substate/ws.selectors.tpl'
                                 });
                             }
                             else    //Not using ws substate data adapter logics
