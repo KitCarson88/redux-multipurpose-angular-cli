@@ -318,7 +318,12 @@ module.exports = function (plop)
                             {
                                 var actionArray = data.substateNoWsActions.split(',');
                                 for (var i = 0; i < actionArray.length; ++i)
+                                {
                                     actionArray[i] = actionArray[i].trim();
+
+                                    if (actionArray[i] === '')
+                                        actionArray.splice(i, 1);
+                                }
                                 data.actionArray = actionArray;
 
                                 plop.setPartial('stateType', pascalCase(data.substateNoWsName) + 'State');
@@ -440,7 +445,7 @@ module.exports = function (plop)
 
                             if (data.substateWsUseAdapter)
                             {
-
+                                
                             }
                             else
                             {
