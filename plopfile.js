@@ -274,6 +274,13 @@ module.exports = function (plop)
                 message: 'Do you want to add the reducer statically\n(alternatively you can add it dynamically everywhere in your code)'
             }, {
                 when: function(response) {
+                    return response.operation === 'substate' && !response.substateWs && !response.substateNoWsStatic;
+                },
+                type: 'input',
+                name: 'substateNoWsStaticMountOnComponent',
+                message: 'Do you want to mount the reducer automatically at the init of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
+            }, {
+                when: function(response) {
                     return response.operation === 'substate' && response.substateWs;
                 },
                 type: 'confirm',
@@ -369,7 +376,7 @@ module.exports = function (plop)
                                 //Append generic substate reducer import to store
                                 actions.push({
                                     type: 'modify',
-                                    path: storeDirectory + 'store.reducer.ts',
+                                    path:   + 'store.reducer.ts',
                                     pattern: /(\nexport function rootReducer)/gi,
                                     template: 'import { {{ camelCase substateNoWsName }}Reducer } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.reducer.ts\';\n$1'
                                 });
@@ -381,6 +388,53 @@ module.exports = function (plop)
                                     pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
                                     template: '\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer,$1'
                                 });
+                            }
+                            else if (data.substateNoWsStaticMountOnComponent && data.substateNoWsStaticMountOnComponent.length)
+                            {
+                                if (!data.substateNoWsStaticMountOnComponent.endsWith('.ts'))
+                                    data.substateNoWsStaticMountOnComponent += '.ts';
+                                var path = getSrcFileRelativePath(data.substateNoWsStaticMountOnComponent);
+
+                                console.log("PATH: ", path);
+
+                                if (path)
+                                {
+                                    if (verifyIfStringInFileExists("@Component", getSrcFileAbsolutePath(data.substateNoWsStaticMountOnComponent)))
+                                    {
+                                        if (!verifyIfStringInFileExists("@ReducerInjector", getSrcFileAbsolutePath(data.substateNoWsStaticMountOnComponent)))
+                                        {
+                                            actions.push({
+                                                type: 'modify',
+                                                path,
+                                                pattern: /('@angular\/core';*)/gi,
+                                                template: '$1\n\nimport { ReducerInjector } from \'@redux-multipurpose/core\';\n'
+                                            });
+
+                                            actions.push({
+                                                type: 'modify',
+                                                path,
+                                                pattern: /(@Component((.|\n)*)\}\))/gi,
+                                                template: '$1\n@ReducerInjector([])'
+                                            });
+                                        }
+
+                                        actions.push({
+                                            type: 'modify',
+                                            path,
+                                            pattern: /(import { ReducerInjector((.)*\n))/gi,
+                                            template: '$1import { {{ camelCase substateNoWsName}}Reducer } from \'' + storeDirectory + '{{ camelCase substateNoWsName}}/{{ camelCase substateNoWsName}}.slice\';\n'
+                                        });
+
+                                        actions.push({
+                                            type: 'modify',
+                                            path,
+                                            pattern: /(@ReducerInjector\(\[({(.|\n)*},\s)*)/gi,
+                                            templateFile: 'templates/ws-substate/ws.component-injection.tpl'
+                                        });
+                                    }
+                                    else
+                                        console.log("File " + path + " not recognized as a component");
+                                }
                             }
                         }
                     }
