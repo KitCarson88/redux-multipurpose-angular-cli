@@ -357,16 +357,16 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
-                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
+                                    pattern: /(} from '.\/index')/gi,
+                                    template: '\t{{ pascalCase substateNoWsName}}Actions,\n$1'
                                 });
 
                                 //Add actions class to store module provide
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
-                                    pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
+                                    pattern: /(const ACTIONS = \[)/gi,
+                                    template: '$1\n\t{{ pascalCase substateNoWsName}}Actions,'
                                 });
                             }
 
@@ -376,7 +376,7 @@ module.exports = function (plop)
                                 //Append generic substate reducer import to store
                                 actions.push({
                                     type: 'modify',
-                                    path:   + 'store.reducer.ts',
+                                    path: storeDirectory + 'store.reducer.ts',
                                     pattern: /(\nexport function rootReducer)/gi,
                                     template: 'import { {{ camelCase substateNoWsName }}Reducer } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.reducer.ts\';\n$1'
                                 });
@@ -385,8 +385,8 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
-                                    pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer,$1'
+                                    pattern: /(return {)/gi,
+                                    template: '$1\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer'
                                 });
                             }
                             else if (data.substateNoWsStaticMountOnComponent && data.substateNoWsStaticMountOnComponent.length)
@@ -401,6 +401,7 @@ module.exports = function (plop)
                                     {
                                         if (!verifyIfStringInFileExists("@ReducerInjector", getSrcFileAbsolutePath(data.substateNoWsStaticMountOnComponent)))
                                         {
+                                            //Append ReducerInjector decorator import
                                             actions.push({
                                                 type: 'modify',
                                                 path,
@@ -408,6 +409,7 @@ module.exports = function (plop)
                                                 template: '$1\n\nimport { ReducerInjector } from \'@redux-multipurpose/core\';\n'
                                             });
 
+                                            //Append ReducerInjector decorator
                                             actions.push({
                                                 type: 'modify',
                                                 path,
@@ -416,6 +418,7 @@ module.exports = function (plop)
                                             });
                                         }
 
+                                        //Append dynamic reducer import
                                         actions.push({
                                             type: 'modify',
                                             path,
@@ -423,6 +426,7 @@ module.exports = function (plop)
                                             template: '$1import { {{ camelCase substateNoWsName}}Reducer } from \'' + storeDirectory + '{{ camelCase substateNoWsName}}/{{ camelCase substateNoWsName}}.slice\';\n'
                                         });
 
+                                        //Append dynamic reducer into decorator
                                         actions.push({
                                             type: 'modify',
                                             path,
