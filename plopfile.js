@@ -395,8 +395,6 @@ module.exports = function (plop)
                                     data.substateNoWsStaticMountOnComponent += '.ts';
                                 var path = getSrcFileRelativePath(data.substateNoWsStaticMountOnComponent);
 
-                                console.log("PATH: ", path);
-
                                 if (path)
                                 {
                                     if (verifyIfStringInFileExists("@Component", getSrcFileAbsolutePath(data.substateNoWsStaticMountOnComponent)))
