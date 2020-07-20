@@ -201,7 +201,7 @@ module.exports = function (plop)
                 message: 'Select an operation',
                 choices: [
                     { value: 'substate', name: 'Create substate' },
-                    { value: 'epic', name: 'Create epic' }
+                    //{ value: 'epic', name: 'Create epic' }
                 ]
             }, {
                 when: function(response) {
@@ -279,14 +279,14 @@ module.exports = function (plop)
                 type: 'input',
                 name: 'substateNoWsStaticMountOnComponent',
                 message: 'Do you want to mount the reducer automatically at the init of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
-            }, {
+            }/*, {
                 when: function(response) {
                     return response.operation === 'substate' && response.substateWs;
                 },
                 type: 'confirm',
                 name: 'substateWsStatic',
                 message: 'Do you want to insert redux wrapper statically in ws substate?\n(alternatively you can add it dynamically everywhere in your code as new substate)'
-            }],
+            }*/],
             actions: function(data) {
                 var actions = [];
                 var storeDirectory = getStoreDirectory();
@@ -441,8 +441,8 @@ module.exports = function (plop)
                     else    //Ws substate creation logics
                     {
                         //Static ws substate creation logics
-                        if (data.substateWsStatic)
-                        {
+                        //if (data.substateWsStatic)
+                        //{
                             //Set a flag before ws substate creation to detect first initialization
                             var wsCreation = false;
                             if (!getSrcFileRelativePath('ws.selectors-dispatchers.ts'))
@@ -695,11 +695,11 @@ module.exports = function (plop)
                                     template: '\n\t\t{ thunk: {{ camelCase substateWsAction }}Thunk, substate: \'{{ camelCase substateWsName }}\', adapter: null },$1'
                                 });
                             }
-                        }
+                        /*}
                         else
                         {
 
-                        }
+                        }*/
                     }
                 }
 
