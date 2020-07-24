@@ -386,7 +386,7 @@ module.exports = function (plop)
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
                                     pattern: /(return {)/gi,
-                                    template: '$1\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer'
+                                    template: '$1\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer,'
                                 });
                             }
                             else if (data.substateNoWsStaticMountOnComponent && data.substateNoWsStaticMountOnComponent.length)
@@ -489,8 +489,8 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
-                                    pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '\n\t\tws: wsReducer,$1'
+                                    pattern: /(return {)/gi,
+                                    template: '$1\n\t\tws: wsReducer,'
                                 });
 
                                 //Append Ws actions class to store index
@@ -504,16 +504,16 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
-                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: 'WsActions,\n\t$1'
+                                    pattern: /(} from '.\/index')/gi,
+                                    template: '\tWsActions,\n$1'
                                 });
     
                                 //Append Ws actions class provide to store module
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
-                                    pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: 'WsActions,\n\t$1'
+                                    pattern: /(const ACTIONS = \[)/gi,
+                                    template: '$1\n\tWsActions,'
                                 });
                             }
 
