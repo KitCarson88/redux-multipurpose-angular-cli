@@ -357,16 +357,16 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
-                                    pattern: /(} from '.\/index')/gi,
-                                    template: '\t{{ pascalCase substateNoWsName}}Actions,\n$1'
+                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
                                 });
 
                                 //Add actions class to store module provide
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
-                                    pattern: /(const ACTIONS = \[)/gi,
-                                    template: '$1\n\t{{ pascalCase substateNoWsName}}Actions,'
+                                    pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
                                 });
                             }
 
@@ -385,8 +385,8 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
-                                    pattern: /(return {)/gi,
-                                    template: '$1\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer,'
+                                    pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer,$1'
                                 });
                             }
                             else if (data.substateNoWsStaticMountOnComponent && data.substateNoWsStaticMountOnComponent.length)
@@ -489,8 +489,8 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
-                                    pattern: /(return {)/gi,
-                                    template: '$1\n\t\tws: wsReducer,'
+                                    pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '\n\t\tws: wsReducer,$1'
                                 });
 
                                 //Append Ws actions class to store index
@@ -504,16 +504,16 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
-                                    pattern: /(} from '.\/index')/gi,
-                                    template: '\tWsActions,\n$1'
+                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: 'WsActions,\n\t$1'
                                 });
     
                                 //Append Ws actions class provide to store module
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
-                                    pattern: /(const ACTIONS = \[)/gi,
-                                    template: '$1\n\tWsActions,'
+                                    pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: 'WsActions,\n\t$1'
                                 });
                             }
 
