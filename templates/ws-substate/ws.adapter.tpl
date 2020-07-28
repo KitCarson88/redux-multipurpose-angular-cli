@@ -1,4 +1,3 @@
-
 export const {{ camelCase substateWsName }}Adapter = createEntityAdapter<{{ pascalCase substateWsName }}DTO>({
     // Assume IDs are stored in a field other than `element.id` where element is one object of {{ pascalCase substateWsName }}
     selectId: element => element.id,
