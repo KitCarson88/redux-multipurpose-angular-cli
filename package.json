@@ -1,6 +1,6 @@
 {
   "name": "@redux-multipurpose/angular-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A multipurpose redux tools angular cli",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "bin": {
     "multux": "./index.js"
   },
-  "preferGlobal": true,
+  "preferGlobal": false,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/KitCarson88/redux-multipurpose-angular-cli.git"
@@ -27,12 +27,18 @@
     "url": "https://github.com/KitCarson88/redux-multipurpose-angular-cli/issues"
   },
   "homepage": "https://kitcarson88.github.io/redux-multipurpose-angular-cli/",
-  "dependencies": {},
-  "devDependencies": {
+  "dependencies": {
     "chalk": "^4.1.0",
     "clear": "^0.1.0",
     "figlet": "^1.5.0",
     "glob-promise": "^3.4.0",
     "plop": "^2.7.3"
-  }
+  },
+  "bundleDependencies": [
+    "chalk",
+    "clear",
+    "figlet",
+    "glob-promise",
+    "plop"
+  ]
 }
