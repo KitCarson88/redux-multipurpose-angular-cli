@@ -24,9 +24,13 @@ function getSrcFileAbsolutePath(file)
         return null;
 }
 
-function getStoreDirectory()
+function getStoreDirectory(absolute)
 {
-    var filePath = getSrcFileRelativePath('store.module');
+    var filePath;
+    if (absolute)
+        filePath = getSrcFileAbsolutePath('store.module');
+    else
+        filePath = getSrcFileRelativePath('store.module');
     const store = 'store/';
     return filePath.substring(0, filePath.indexOf(store)) + store;
 }
@@ -289,7 +293,7 @@ module.exports = function (plop)
             }*/],
             actions: function(data) {
                 var actions = [];
-                var storeDirectory = getStoreDirectory();
+                var storeDirectory = getStoreDirectory(true);
 
                 if (data.operation === 'substate')
                 {
@@ -378,7 +382,7 @@ module.exports = function (plop)
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
                                     pattern: /(\nexport function rootReducer)/gi,
-                                    template: 'import { {{ camelCase substateNoWsName }}Reducer } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.reducer.ts\';\n$1'
+                                    template: 'import { {{ camelCase substateNoWsName }}Reducer } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.slice\';\n$1'
                                 });
 
                                 //Append generic substate reducer
@@ -423,7 +427,7 @@ module.exports = function (plop)
                                             type: 'modify',
                                             path,
                                             pattern: /(import { ReducerInjector((.)*\n))/gi,
-                                            template: '$1import { {{ camelCase substateNoWsName}}Reducer } from \'' + storeDirectory + '{{ camelCase substateNoWsName}}/{{ camelCase substateNoWsName}}.slice\';\n'
+                                            template: '$1import { {{ camelCase substateNoWsName}}Reducer } from \'' + getStoreDirectory(false) + '{{ camelCase substateNoWsName}}/{{ camelCase substateNoWsName}}.slice\';\n'
                                         });
 
                                         //Append dynamic reducer into decorator
