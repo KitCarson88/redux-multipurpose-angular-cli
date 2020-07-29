@@ -1,4 +1,4 @@
-# @redux-multipurpose/angular-cli
+# [@redux-multipurpose/angular-cli](https://github.com/KitCarson88/redux-multipurpose-angular-cli)
 
 The repository contains a Plop js project that is part of the @redux-multipurpose software suite.
 It helps the developer to integrate a @reduxjs/toolkit store into an Angular 2+ application, and to create submodules of the store.
