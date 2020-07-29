@@ -350,6 +350,17 @@ module.exports = function (plop)
                                     templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
                                 });
 
+                                if (verifyIfStringInFileExists("export {};", getSrcFileAbsolutePath("store/index.ts")))
+                                {
+                                    //Remove default export {}; from index
+                                    actions.push({
+                                        type: 'modify',
+                                        pattern: /(export\s*\{\s*\};)/gi,
+                                        path: storeDirectory + 'index.ts',
+                                        template: ''
+                                    });
+                                }
+
                                 //Append actions class to store index
                                 actions.push({
                                     type: 'append',
@@ -496,6 +507,17 @@ module.exports = function (plop)
                                     pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
                                     template: '\n\t\tws: wsReducer,$1'
                                 });
+
+                                if (verifyIfStringInFileExists("export {};", getSrcFileAbsolutePath("store/index.ts")))
+                                {
+                                    //Remove default export {}; from index
+                                    actions.push({
+                                        type: 'modify',
+                                        pattern: /(export\s*\{\s*\};)/gi,
+                                        path: storeDirectory + 'index.ts',
+                                        template: ''
+                                    });
+                                }
 
                                 //Append Ws actions class to store index
                                 actions.push({
