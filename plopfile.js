@@ -77,6 +77,60 @@ function verifyInAppModuleImport(pathFile)
     }
 }
 
+function trimLines(array)
+{
+    for (var i = 0; i < array.length; ++i)
+        array[i] = array[i].trim();
+
+    return array;
+}
+
+function appModuleImportsOnNewLines(file)
+{
+    var fileContent = fs.readFileSync(file).toString();
+    console.log(fileContent);
+    const fileLines = fileContent.split(/\r?\n/);
+    console.log(fileLines);
+
+    for (var i = 0; i < fileLines.length; ++i)
+    {
+        if (fileLines[i].indexOf('imports') >= 0)
+        {
+            console.log("Line index: ", i);
+            console.log("Line: ", fileLines[i]);
+
+            var line = fileLines[i];
+
+            var openSquareBracketCount = 0, closeSquareBracketCount = 0;
+
+            for (var j = 0; j < line.length; ++j)
+            {
+                const char = line.charAt(j);
+                if (char == '[')
+                    ++openSquareBracketCount;
+                else if (char == ']')
+                    ++closeSquareBracketCount;
+            }
+
+            console.log("openBrackets: ", openSquareBracketCount);
+            console.log("closeBrackets: ", closeSquareBracketCount);
+
+            if (openSquareBracketCount >= 0 && openSquareBracketCount == closeSquareBracketCount)
+            {
+                line = trimLines(line.split('[')).join('[\n\t\t');
+                line = trimLines(line.split(']')).join('\n\t]');
+                line = trimLines(line.split(',')).join(',\n\t\t').trim();
+
+                console.log("line: ", line);
+
+                fileLines[i] = line;
+            }
+        }
+    }
+
+    fs.writeFileSync(file, fileLines.join('\n'));
+}
+
 function verifyIfStringInFileExists(value, pathFile)
 {
     var file = fs.readFileSync(pathFile).toString();
@@ -178,6 +232,8 @@ module.exports = function (plop)
                 let appModuleFile = getSrcFileAbsolutePath('app.module');
                 if (!verifyInAppModuleImport(appModuleFile))
                 {
+                    appModuleImportsOnNewLines(appModuleFile);
+
                     actions.push({
                         type: 'modify',
                         path: appModuleFile,
