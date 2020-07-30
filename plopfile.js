@@ -88,16 +88,16 @@ function trimLines(array)
 function appModuleImportsOnNewLines(file)
 {
     var fileContent = fs.readFileSync(file).toString();
-    console.log(fileContent);
+    //console.log(fileContent);
     const fileLines = fileContent.split(/\r?\n/);
-    console.log(fileLines);
+    //console.log(fileLines);
 
     for (var i = 0; i < fileLines.length; ++i)
     {
         if (fileLines[i].indexOf('imports') >= 0)
         {
-            console.log("Line index: ", i);
-            console.log("Line: ", fileLines[i]);
+            //console.log("Line index: ", i);
+            //console.log("Line: ", fileLines[i]);
 
             var line = fileLines[i];
 
@@ -112,8 +112,8 @@ function appModuleImportsOnNewLines(file)
                     ++closeSquareBracketCount;
             }
 
-            console.log("openBrackets: ", openSquareBracketCount);
-            console.log("closeBrackets: ", closeSquareBracketCount);
+            //console.log("openBrackets: ", openSquareBracketCount);
+            //console.log("closeBrackets: ", closeSquareBracketCount);
 
             if (openSquareBracketCount >= 0 && openSquareBracketCount == closeSquareBracketCount)
             {
@@ -121,7 +121,7 @@ function appModuleImportsOnNewLines(file)
                 line = trimLines(line.split(']')).join('\n\t]');
                 line = trimLines(line.split(',')).join(',\n\t\t').trim();
 
-                console.log("line: ", line);
+                //console.log("line: ", line);
 
                 fileLines[i] = line;
             }
