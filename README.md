@@ -17,7 +17,9 @@ To use a specific version of the cli in a Angular project a local installation a
     
 ## Usage
 
-To start the cli, into the directory of your Angular project, type the command `multux` (that stands for multipurpose redux).
+To start the cli, into the directory of your Angular project, type the command `multux` (that stands for multipurpose redux). The command starts the cli using global package.
+It is recommendable to use the local version of the cli using the command `npx multux`.
 
 The cli is interactive and during its first usage, it helps the developer to integrate a new store instance.
 Executing again the cli after store generation, it helps to add different tools and modules skeletons to your store instance.
+Please don't use it with an instance of a store not initialized with this cli.
