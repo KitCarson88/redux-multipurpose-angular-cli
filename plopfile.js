@@ -734,6 +734,20 @@ module.exports = function (plop)
                                     template: '\n\t{ \'{{ camelCase substateWsName }}\': { data: {{ camelCase substateWsName }}Adapter.getInitialState() }},$1'
                                 });
 
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'index.ts',
+                                    pattern: /(\{\s*WsActions\s*\})/gi,
+                                    template: '{\n\tWsActions\n}'
+                                });
+
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'index.ts',
+                                    pattern: /(WsActions)/gi,
+                                    template: '{{ camelCase substateWsName }}Object, {{ camelCase substateWsName }}Array, {{ camelCase substateWsName }}Count,\n\t$1'
+                                });
+
                                 //Append adapter import to ws slice
                                 actions.push({
                                     type: 'modify',
