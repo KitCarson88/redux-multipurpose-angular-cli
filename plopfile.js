@@ -267,26 +267,31 @@ module.exports = function (plop)
                 when: function(response) {
                     return response.operation === 'substate';
                 },
-                type: 'confirm',
-                name: 'substateWs',
-                message: 'Is it a web service wrapper state?'
+                type: 'list',
+                name: 'substateFunction',
+                message: 'What type of substate?',
+                choices: [
+                    { value: 'ws', name: 'Web service wrapper substate' },
+                    //{ value: 'storage', name: 'Storage substate' },
+                    { value: 'generic', name: 'Generic substate' }
+                ]
             }, {
                 when: function(response) {
-                    return response.operation === 'substate' && !response.substateWs;
+                    return response.operation === 'substate' && response.substateFunction === 'generic';
                 },
                 type: 'input',
                 name: 'substateNoWsName',
                 message: 'Name? (Please use spaces instead of camel case, dash case, or other notations)'
             }, {
                 when: function(response) {
-                    return response.operation === 'substate' && response.substateWs;
+                    return response.operation === 'substate' && response.substateFunction === 'ws';
                 },
                 type: 'input',
                 name: 'substateWsName',
                 message: 'Data name? (Please use spaces instead of camel case, dash case, or other notations)'
             }, {
                 when: function(response) {
-                    return response.operation === 'substate' && !response.substateWs;
+                    return response.operation === 'substate' && response.substateFunction === 'generic';
                 },
                 type: 'list',
                 name: 'substateType',
@@ -299,49 +304,49 @@ module.exports = function (plop)
                 ]
             }, {
                 when: function(response) {
-                    return response.operation === 'substate' && !response.substateWs;
+                    return response.operation === 'substate' && response.substateFunction === 'generic';
                 },
                 type: 'input',
                 name: 'substateNoWsActions',
                 message: 'Do you want to add some actions?\n(Please insert them in camel case, or with spaces, separated by comma; or leave it blank to skip this step)'
             }, {
                 when: function(response) {
-                    return response.operation === 'substate' && response.substateWs;
+                    return response.operation === 'substate' && response.substateFunction === 'ws';
                 },
                 type: 'confirm',
                 name: 'substateWsUseAdapter',
                 message: 'Do you want to use an adapter for your data? (Useful when you want data indexing and auto data ordering on retrieve)'
             }, {
                 when: function(response) {
-                    return response.operation === 'substate' && response.substateWs;
+                    return response.operation === 'substate' && response.substateFunction === 'ws';
                 },
                 type: 'input',
                 name: 'substateWsAction',
                 message: 'What is the name of data retrieve action?\n(Please insert it in camel case or with spaces; e.g. getExamples, setExampleData, retrieve data, etc.)'
             }, {
                 when: function(response) {
-                    return response.operation === 'substate' && response.substateWs;
+                    return response.operation === 'substate' && response.substateFunction === 'ws';
                 },
                 type: 'input',
                 name: 'substateWsProvider',
                 message: 'Insert a provider name. Please provide the same name if you want to add another call to the same provider.\n(Please use spaces instead of camel case, dash case, or other notations)'
             }, {
                 when: function(response) {
-                    return response.operation === 'substate' && !response.substateWs;
+                    return response.operation === 'substate' && response.substateFunction === 'generic';
                 },
                 type: 'confirm',
                 name: 'substateNoWsStatic',
                 message: 'Do you want to add the reducer statically\n(alternatively you can add it dynamically everywhere in your code)'
             }, {
                 when: function(response) {
-                    return response.operation === 'substate' && !response.substateWs && !response.substateNoWsStatic;
+                    return response.operation === 'substate' && response.substateFunction === 'generic' && !response.substateNoWsStatic;
                 },
                 type: 'input',
                 name: 'substateNoWsStaticMountOnComponent',
                 message: 'Do you want to mount the reducer automatically at the init of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
             }/*, {
                 when: function(response) {
-                    return response.operation === 'substate' && response.substateWs;
+                    return response.operation === 'substate' && response.substateFunction === 'ws';
                 },
                 type: 'confirm',
                 name: 'substateWsStatic',
@@ -354,7 +359,7 @@ module.exports = function (plop)
                 if (data.operation === 'substate')
                 {
                     //Generic substate creation logics
-                    if (!data.substateWs)
+                    if (data.substateFunction === 'generic')
                     {
                         if (data.substateNoWsName && data.substateType)
                         {
@@ -511,7 +516,7 @@ module.exports = function (plop)
                             }
                         }
                     }
-                    else    //Ws substate creation logics
+                    else if (data.substateFunction === 'ws')    //Ws substate creation logics
                     {
                         //Static ws substate creation logics
                         //if (data.substateWsStatic)
@@ -784,6 +789,10 @@ module.exports = function (plop)
                         {
 
                         }*/
+                    }
+                    else if (data.substateFunction === 'storage')
+                    {
+
                     }
                 }
 
