@@ -1,6 +1,4 @@
-$1
-
-    {{ camelCase substateWsAction }}()
+{{ camelCase substateWsAction }}()
     {
         //Provide here your call to data retrieve, replacing following example empty promise
         
@@ -8,3 +6,5 @@ $1
             resolve({});
         });
     }
+
+    $1

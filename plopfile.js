@@ -629,7 +629,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
-                                pattern: /(constructor\(\) {})/gi,
+                                pattern: /(\/\/Provider calls: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
                                 templateFile: 'templates/ws-substate/ws.provider-call.tpl'
                             });
 
@@ -731,7 +731,7 @@ module.exports = function (plop)
                                     type: 'modify',
                                     path: storeDirectory + 'ws/ws.model.ts',
                                     pattern: /(\s*\t*\/\/Ws data: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '\n\t{ \'{{ camelCase substateWsName }}Adapter\': { data: {{ camelCase substateWsName }}Adapter.getInitialState() }},$1'
+                                    template: '\n\t{ \'{{ camelCase substateWsName }}\': { data: {{ camelCase substateWsName }}Adapter.getInitialState() }},$1'
                                 });
 
                                 //Append adapter import to ws slice
