@@ -558,7 +558,7 @@ module.exports = function (plop)
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
                                     pattern: /(\nexport function rootReducer)/gi,
-                                    template: 'import { wsReducer } from \'./ws/ws.reducer.ts\';\n$1'
+                                    template: 'import { wsReducer } from \'./ws/ws.slice\';\n$1'
                                 });
 
                                 //Append generic substate reducer
