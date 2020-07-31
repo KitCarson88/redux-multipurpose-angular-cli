@@ -1,6 +1,6 @@
 @dispatch()
     {{ camelCase substateWsAction }} = () => {
-        {{ camelCase substateWsAction }}Thunk();
+        return {{ camelCase substateWsAction }}Thunk();
     };
 
     $1
