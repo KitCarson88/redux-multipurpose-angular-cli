@@ -1,4 +1,4 @@
-{{#if enablePersistence}}import { createStoredReducer } from '@redux-multipurpose/core';
+{{#if enablePersistence}}import { createStoredReducer, createSecureStoredReducer } from '@redux-multipurpose/core';
 
 {{/if}}
 

@@ -137,6 +137,13 @@ function verifyIfStringInFileExists(value, pathFile)
     return file.indexOf(value) >= 0;
 }
 
+function verifyIfWholeWordInFileExists(value, pathFile)
+{
+    var file = fs.readFileSync(pathFile).toString();
+    const ret = file.match(new RegExp(/\b/.source + new RegExp(value).source + /\b/.source, 'gi'));
+    return ret;
+}
+
 function pascalCase(value)
 {
     var tokens = value.split(' ');
@@ -351,6 +358,13 @@ module.exports = function (plop)
                 type: 'input',
                 name: 'persistSubstate',
                 message: 'What existent substate do you want to persist?'
+            }, {
+                when: function(response) {
+                    return response.operation === 'persist';
+                },
+                type: 'confirm',
+                name: 'persistSecure',
+                message: 'Do you want to persist it securely?'
             }],
             actions: function(data) {
                 var actions = [];
@@ -799,26 +813,48 @@ module.exports = function (plop)
                 }
                 else if (data.operation === 'persist')
                 {
-                    if (data.persistSubstate && data.persistSubstate.length && getSrcFileRelativePath(data.persistSubstate + '.model.ts'))
+                    if (data.persistSubstate && data.persistSubstate.length && verifyIfWholeWordInFileExists(data.persistSubstate, getSrcFileAbsolutePath("store/store.reducer.ts")))
                     {
-                        actions.push({
-                            type: 'modify',
-                            path: storeDirectory + 'store.reducer.ts',
-                            pattern: new RegExp(data.persistSubstate + 'Reducer,', 'gi'),
-                            template: '{{persistSubstate}}PersistedReducer,'
-                        });
+                        const regex = /\:\s*/gi;
+                        const reducerRegex = new RegExp(data.persistSubstate + 'Reducer,', 'gi');
 
-                        actions.push({
-                            type: 'modify',
-                            path: storeDirectory + 'store.reducer.ts',
-                            pattern: /(\/\/Persisted reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                            template: 'const {{persistSubstate}}PersistedReducer = createStoredReducer(\'{{persistSubstate}}\', storage, {{persistSubstate}}Reducer);\n\t$1'
-                        });
+                        if (data.persistSecure)
+                        {
+                            actions.push({
+                                type: 'modify',
+                                path: storeDirectory + 'store.reducer.ts',
+                                pattern: new RegExp(regex.source + reducerRegex.source),
+                                template: ': {{persistSubstate}}SecurePersistedReducer,'
+                            });
+
+                            const key = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+                            actions.push({
+                                type: 'modify',
+                                path: storeDirectory + 'store.reducer.ts',
+                                pattern: /(\/\/Persisted reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                template: 'const {{persistSubstate}}SecurePersistedReducer = createSecureStoredReducer(\'{{persistSubstate}}\', \'' + key + '\', storage, {{persistSubstate}}Reducer);\n\t$1'
+                            });
+                        }
+                        else
+                        {
+                            actions.push({
+                                type: 'modify',
+                                path: storeDirectory + 'store.reducer.ts',
+                                pattern: new RegExp(regex.source + reducerRegex.source),
+                                template: ': {{persistSubstate}}PersistedReducer,'
+                            });
+    
+                            actions.push({
+                                type: 'modify',
+                                path: storeDirectory + 'store.reducer.ts',
+                                pattern: /(\/\/Persisted reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                template: 'const {{persistSubstate}}PersistedReducer = createStoredReducer(\'{{persistSubstate}}\', storage, {{persistSubstate}}Reducer);\n\t$1'
+                            });
+                        }
                     }
                     else
-                    {
                         console.log("Substate not found");
-                    }
                 }
 
                 return actions;
