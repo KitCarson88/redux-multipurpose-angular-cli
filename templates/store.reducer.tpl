@@ -4,6 +4,8 @@
 
 export function rootReducer({{#if enablePersistence}}storage{{/if}})
 {
+  //Persisted reducers: PLEASE DON'T DELETE THIS PLACEHOLDER
+
   return {
     //Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER
   };
