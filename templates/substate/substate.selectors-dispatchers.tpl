@@ -6,7 +6,7 @@ import {
     {{#each actionArray as |actionToAdd|}}
     {{camelCase actionToAdd}} as {{camelCase actionToAdd}}Action,
     {{/each}}
-} from './{{ camelCase substateNoWsName}}.slice';
+} from './{{ dashCase substateNoWsName}}.slice';
 
 @Injectable()
 export class {{ pascalCase substateNoWsName}}Actions

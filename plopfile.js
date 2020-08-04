@@ -1,6 +1,7 @@
 const glob = require('glob-promise');
 const fs = require('fs');
 const { cwd } = require('process');
+const { pascalCase, kebabCase } = require('change-case');
 
 const SRC_DIR = 'src';
 
@@ -144,23 +145,6 @@ function verifyIfWholeWordInFileExists(value, pathFile)
     return ret;
 }
 
-function pascalCase(value)
-{
-    var tokens = value.split(' ');
-    for (var i = 0; i < tokens.length; ++i)
-        if (tokens[i].length > 1)
-            tokens[i] = tokens[i].charAt(0).toUpperCase() + tokens[i].substring(1);
-        else if (tokens[i].length == 1)
-            tokens[i] = tokens[i].toUpperCase();
-    return tokens.join('');
-}
-
-function dashCase(value)
-{
-    var tokens = value.split(' ');
-    return tokens.join('-');
-}
-
 module.exports = function (plop)
 {
     //Verify if store module exists and it's contained under src/store path
@@ -268,8 +252,9 @@ module.exports = function (plop)
                 message: 'Select an operation',
                 choices: [
                     { value: 'substate', name: 'Create substate' },
-                    { value: 'persist', name: 'Persist a substate' }
-                    //{ value: 'epic', name: 'Create epic' }
+                    { value: 'persist', name: 'Persist a substate' },
+                    //{ value: 'epic', name: 'Create epic' },
+                    //{ value: 'saga', name: 'Create saga' }
                 ]
             }, {
                 when: function(response) {
@@ -288,14 +273,14 @@ module.exports = function (plop)
                 },
                 type: 'input',
                 name: 'substateNoWsName',
-                message: 'Name? (Please use spaces instead of camel case, dash case, or other notations)'
+                message: 'Name?'
             }, {
                 when: function(response) {
                     return response.operation === 'substate' && response.substateFunction === 'ws';
                 },
                 type: 'input',
                 name: 'substateWsName',
-                message: 'Data name? (Please use spaces instead of camel case, dash case, or other notations)'
+                message: 'Data name?'
             }, {
                 when: function(response) {
                     return response.operation === 'substate' && response.substateFunction === 'generic';
@@ -315,7 +300,7 @@ module.exports = function (plop)
                 },
                 type: 'input',
                 name: 'substateNoWsActions',
-                message: 'Do you want to add some actions?\n(Please insert them in camel case, or with spaces, separated by comma; or leave it blank to skip this step)'
+                message: 'Do you want to add some actions?\n(Please insert them separated by comma; or leave it blank to skip this step)'
             }, {
                 when: function(response) {
                     return response.operation === 'substate' && response.substateFunction === 'ws';
@@ -329,21 +314,21 @@ module.exports = function (plop)
                 },
                 type: 'input',
                 name: 'substateWsAction',
-                message: 'What is the name of data retrieve action?\n(Please insert it in camel case or with spaces; e.g. getExamples, setExampleData, retrieve data, etc.)'
+                message: 'What is the name of data retrieve action?'
             }, {
                 when: function(response) {
                     return response.operation === 'substate' && response.substateFunction === 'ws';
                 },
                 type: 'input',
                 name: 'substateWsProvider',
-                message: 'Insert a provider name. Please provide the same name if you want to add another call to the same provider.\n(Please use spaces instead of camel case, dash case, or other notations)'
+                message: 'Insert a provider name. Please provide the same name if you want to add another call to the same provider.'
             }, {
                 when: function(response) {
                     return response.operation === 'substate' && response.substateFunction === 'generic';
                 },
                 type: 'confirm',
                 name: 'substateNoWsStatic',
-                message: 'Do you want to add the reducer statically\n(alternatively you can add it dynamically everywhere in your code)'
+                message: 'Do you want to add the reducer statically?\n(alternatively you can add it dynamically everywhere in your code)'
             }, {
                 when: function(response) {
                     return response.operation === 'substate' && response.substateFunction === 'generic' && !response.substateNoWsStatic;
@@ -365,7 +350,35 @@ module.exports = function (plop)
                 type: 'confirm',
                 name: 'persistSecure',
                 message: 'Do you want to persist it securely?'
-            }],
+            }/*, {
+                when: function(response) {
+                    return response.operation === 'epic';
+                },
+                type: 'input',
+                name: 'epicSubstate',
+                message: 'Which state do you want to add the epic to?'
+            }, {
+                when: function(response) {
+                    return response.operation === 'epic';
+                },
+                type: 'input',
+                name: 'epicName',
+                message: 'What is the name of the epic method? (Please insert it with spaces or in camel case format)'
+            }, {
+                when: function(response) {
+                    return response.operation === 'epic';
+                },
+                type: 'input',
+                name: 'epicOnTriggerAction',
+                message: 'What is the launch existent action to trigger? (it must be contained in the typed substate reducer)'
+            }, {
+                when: function(response) {
+                    return response.operation === 'epic';
+                },
+                type: 'input',
+                name: 'epicStatic',
+                message: 'Do you want to add the epic statically?\n(alternatively you can add it dynamically everywhere in your code)'
+            }*/],
             actions: function(data) {
                 var actions = [];
                 var storeDirectory = getStoreDirectory(true);
@@ -617,7 +630,7 @@ module.exports = function (plop)
 
                         //Set a flag before provider creation to detect first initialization
                         var providerCreation = false;
-                        if (!getSrcFileRelativePath(dashCase(data.substateWsProvider)))
+                        if (!getSrcFileRelativePath(kebabCase(data.substateWsProvider)))
                             providerCreation = true;
 
                         //Create new provider class if doesn't exist yet
@@ -855,6 +868,24 @@ module.exports = function (plop)
                     }
                     else
                         console.log("Substate not found");
+                }
+                else if (data.operation === 'epic')
+                {
+                    if (data.epicSubstate && data.epicSubstate.length && verifyIfWholeWordInFileExists(data.epicSubstate, getSrcFileAbsolutePath("store/store.reducer.ts")))
+                    {
+                        if (data.epicName && data.epicName.length)
+                        {
+                            //if (data.epicOnTriggerAction && data.epicOnTriggerAction.length && verifyIfWholeWordInFileExists(data.epicOnTriggerAction, getSrcFileAbsolutePath()))
+                        }
+                        else
+                            console.log("Please insert an epic name");
+                    }
+                    else
+                        console.log("Substate not found");
+                }
+                else if (data.operation === 'saga')
+                {
+
                 }
 
                 return actions;
