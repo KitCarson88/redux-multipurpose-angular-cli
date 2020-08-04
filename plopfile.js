@@ -371,14 +371,14 @@ module.exports = function (plop)
                 type: 'input',
                 name: 'epicOnTriggerAction',
                 message: 'What is the launch existent action to trigger?'
-            }/*, {
+            }, {
                 when: function(response) {
                     return response.operation === 'epic';
                 },
                 type: 'input',
                 name: 'epicStatic',
                 message: 'Do you want to add the epic statically?\n(alternatively you can add it dynamically everywhere in your code)'
-            }*/],
+            }],
             actions: function(data) {
                 var actions = [];
                 var storeDirectory = getStoreDirectory(true);
@@ -833,6 +833,7 @@ module.exports = function (plop)
 
                         if (data.persistSecure)
                         {
+                            //Replace reducer with secure persisted reducer
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
@@ -842,6 +843,7 @@ module.exports = function (plop)
 
                             const key = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
+                            //Add secure persisted reducer creation
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
@@ -851,6 +853,7 @@ module.exports = function (plop)
                         }
                         else
                         {
+                            //Replace reducer with persisted reducer
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
@@ -858,6 +861,7 @@ module.exports = function (plop)
                                 template: ': {{persistSubstate}}PersistedReducer,'
                             });
     
+                            //Add persisted reducer creation
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
@@ -878,6 +882,7 @@ module.exports = function (plop)
                             if (data.epicOnTriggerAction && data.epicOnTriggerAction.length && 
                                 verifyIfWholeWordInFileExists(camelCase(data.epicOnTriggerAction), getSrcFileAbsolutePath(kebabCase(data.epicSubstate) + '.slice.ts')))
                             {
+                                //Create epic file
                                 actions.push({
                                     type: 'add',
                                     path: storeDirectory + '{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics.ts',
@@ -885,39 +890,45 @@ module.exports = function (plop)
                                     skipIfExists: true
                                 });
 
-                                actions.push({
-                                    type: 'modify',
-                                    path: storeDirectory + '{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics.ts',
-                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '{{ camelCase epicOnTriggerAction }},\n\t$1'
-                                });
+                                if (!verifyIfStringInFileExists(camelCase(data.epicOnTriggerAction), getSrcFileAbsolutePath(kebabCase(data.epicSubstate) + '.epics.ts')))
+                                {
+                                    //If the trigger action wasn't added yet, adding it to imports
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + '{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics.ts',
+                                        pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                        template: '{{ camelCase epicOnTriggerAction }},\n\t$1'
+                                    });
+                                }
 
+                                //Append new epic
                                 actions.push({
                                     type: 'append',
                                     path: storeDirectory + '{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics.ts',
                                     templateFile: 'templates/substate/substate.epic.tpl',
                                 });
 
-                                //if (data.epicStatic)
-                                //{
-                                    /*if (verifyIfStringInFileExists(kebabCase(data.epicSubstate) + '.epics', getSrcFileAbsolutePath('store/epics.ts')))
+                                if (data.epicStatic)
+                                {
+                                    if (verifyIfStringInFileExists(kebabCase(data.epicSubstate) + '.epics', getSrcFileAbsolutePath('store/epics.ts')))
                                     {
+                                        const regex = new RegExp(/(\s*\}\s*from\s*\'\.\/\s*)/gi.source + new RegExp('(' + kebabCase(data.epicSubstate) + ')', 'gi').source);
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
-                                            pattern: new RegExp(/(\}(\s*)from(\s*)\'.\/)/gi.source + new RegExp(kebabCase(data.epicSubstate), 'gi').source),
-                                            template: ', {{ camelCase epicName }} $1'
+                                            pattern: regex,
+                                            template: ', {{ camelCase epicName }}$1$2'
                                         });
                                     }
                                     else
-                                    {*/
+                                    {
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
                                             pattern: /(\/\/Epics imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
                                             template: 'import { {{ camelCase epicName }} } from \'./{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics\';\n$1'
                                         });
-                                    //}
+                                    }
 
                                     actions.push({
                                         type: 'modify',
@@ -925,11 +936,11 @@ module.exports = function (plop)
                                         pattern: /(\/\/Epics: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
                                         template: '{{ camelCase epicName }}(),\n\t\t$1'
                                     });
-                                /*}
+                                }
                                 else
                                 {
 
-                                }*/
+                                }
                             }
                             else
                                 console.log("Cannot find the typed action to trigger");
