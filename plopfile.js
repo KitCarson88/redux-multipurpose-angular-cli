@@ -1,7 +1,7 @@
 const glob = require('glob-promise');
 const fs = require('fs');
 const { cwd } = require('process');
-const { pascalCase, kebabCase } = require('change-case');
+const { camelCase, pascalCase, kebabCase } = require('change-case');
 
 const SRC_DIR = 'src';
 
@@ -253,7 +253,7 @@ module.exports = function (plop)
                 choices: [
                     { value: 'substate', name: 'Create substate' },
                     { value: 'persist', name: 'Persist a substate' },
-                    //{ value: 'epic', name: 'Create epic' },
+                    { value: 'epic', name: 'Create epic' },
                     //{ value: 'saga', name: 'Create saga' }
                 ]
             }, {
@@ -350,7 +350,7 @@ module.exports = function (plop)
                 type: 'confirm',
                 name: 'persistSecure',
                 message: 'Do you want to persist it securely?'
-            }/*, {
+            }, {
                 when: function(response) {
                     return response.operation === 'epic';
                 },
@@ -363,15 +363,15 @@ module.exports = function (plop)
                 },
                 type: 'input',
                 name: 'epicName',
-                message: 'What is the name of the epic method? (Please insert it with spaces or in camel case format)'
+                message: 'What is the name of the epic method?'
             }, {
                 when: function(response) {
                     return response.operation === 'epic';
                 },
                 type: 'input',
                 name: 'epicOnTriggerAction',
-                message: 'What is the launch existent action to trigger? (it must be contained in the typed substate reducer)'
-            }, {
+                message: 'What is the launch existent action to trigger?'
+            }/*, {
                 when: function(response) {
                     return response.operation === 'epic';
                 },
@@ -871,11 +871,68 @@ module.exports = function (plop)
                 }
                 else if (data.operation === 'epic')
                 {
-                    if (data.epicSubstate && data.epicSubstate.length && verifyIfWholeWordInFileExists(data.epicSubstate, getSrcFileAbsolutePath("store/store.reducer.ts")))
+                    if (data.epicSubstate && data.epicSubstate.length && verifyIfWholeWordInFileExists(camelCase(data.epicSubstate), getSrcFileAbsolutePath("store/store.reducer.ts")))
                     {
                         if (data.epicName && data.epicName.length)
                         {
-                            //if (data.epicOnTriggerAction && data.epicOnTriggerAction.length && verifyIfWholeWordInFileExists(data.epicOnTriggerAction, getSrcFileAbsolutePath()))
+                            if (data.epicOnTriggerAction && data.epicOnTriggerAction.length && 
+                                verifyIfWholeWordInFileExists(camelCase(data.epicOnTriggerAction), getSrcFileAbsolutePath(kebabCase(data.epicSubstate) + '.slice.ts')))
+                            {
+                                actions.push({
+                                    type: 'add',
+                                    path: storeDirectory + '{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics.ts',
+                                    templateFile: 'templates/substate/substate.epics.tpl',
+                                    skipIfExists: true
+                                });
+
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + '{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics.ts',
+                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '{{ camelCase epicOnTriggerAction }},\n\t$1'
+                                });
+
+                                actions.push({
+                                    type: 'append',
+                                    path: storeDirectory + '{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics.ts',
+                                    templateFile: 'templates/substate/substate.epic.tpl',
+                                });
+
+                                //if (data.epicStatic)
+                                //{
+                                    /*if (verifyIfStringInFileExists(kebabCase(data.epicSubstate) + '.epics', getSrcFileAbsolutePath('store/epics.ts')))
+                                    {
+                                        actions.push({
+                                            type: 'modify',
+                                            path: storeDirectory + 'epics.ts',
+                                            pattern: new RegExp(/(\}(\s*)from(\s*)\'.\/)/gi.source + new RegExp(kebabCase(data.epicSubstate), 'gi').source),
+                                            template: ', {{ camelCase epicName }} $1'
+                                        });
+                                    }
+                                    else
+                                    {*/
+                                        actions.push({
+                                            type: 'modify',
+                                            path: storeDirectory + 'epics.ts',
+                                            pattern: /(\/\/Epics imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                            template: 'import { {{ camelCase epicName }} } from \'./{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics\';\n$1'
+                                        });
+                                    //}
+
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'epics.ts',
+                                        pattern: /(\/\/Epics: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                        template: '{{ camelCase epicName }}(),\n\t\t$1'
+                                    });
+                                /*}
+                                else
+                                {
+
+                                }*/
+                            }
+                            else
+                                console.log("Cannot find the typed action to trigger");
                         }
                         else
                             console.log("Please insert an epic name");
