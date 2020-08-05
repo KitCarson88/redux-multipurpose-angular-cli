@@ -338,6 +338,13 @@ module.exports = function (plop)
                 message: 'Do you want to mount the reducer automatically at the init of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
             }, {
                 when: function(response) {
+                    return response.operation === 'substate' && response.substateFunction === 'generic' && !response.substateNoWsStatic && response.substateNoWsStaticMountOnComponent;
+                },
+                type: 'input',
+                name: 'substateNoWsStaticUnmountOnComponent',
+                message: 'Do you want to unmount the reducer automatically at the destroy of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
+            }, {
+                when: function(response) {
                     return response.operation === 'persist';
                 },
                 type: 'input',
@@ -416,7 +423,7 @@ module.exports = function (plop)
                                 templateFile: 'templates/substate/substate.slice.tpl'
                             });
 
-                            //Actions creation logics
+                            //Setting data to add actions in substate slice
                             if (data.substateNoWsActions && data.substateNoWsActions.length)
                             {
                                 var actionArray = data.substateNoWsActions.split(',');
@@ -430,52 +437,56 @@ module.exports = function (plop)
                                 data.actionArray = actionArray;
 
                                 plop.setPartial('stateType', pascalCase(data.substateNoWsName) + 'State');
-
-                                //Create generic substate selectors and dispatchers file
-                                actions.push({
-                                    type: 'add',
-                                    path: storeDirectory + '{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers.ts',
-                                    templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
-                                });
-
-                                if (verifyIfStringInFileExists("export {};", getSrcFileAbsolutePath("store/index.ts")))
-                                {
-                                    //Remove default export {}; from index
-                                    actions.push({
-                                        type: 'modify',
-                                        pattern: /(export\s*\{\s*\};)/gi,
-                                        path: storeDirectory + 'index.ts',
-                                        template: ''
-                                    });
-                                }
-
-                                //Append actions class to store index
-                                actions.push({
-                                    type: 'append',
-                                    path: storeDirectory + 'index.ts',
-                                    template: 'export { {{ pascalCase substateNoWsName}}Actions } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers\';'
-                                });
-
-                                //Add actions class import to store module
-                                actions.push({
-                                    type: 'modify',
-                                    path: storeDirectory + 'store.module.ts',
-                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
-                                });
-
-                                //Add actions class to store module provide
-                                actions.push({
-                                    type: 'modify',
-                                    path: storeDirectory + 'store.module.ts',
-                                    pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
-                                });
                             }
 
                             //Static generic substate reducer add logics
                             if (data.substateNoWsStatic)
                             {
+                                //Actions creation logics
+                                if (data.substateNoWsActions && data.substateNoWsActions.length)
+                                {
+                                    //Create generic substate selectors and dispatchers file
+                                    actions.push({
+                                        type: 'add',
+                                        path: storeDirectory + '{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers.ts',
+                                        templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
+                                    });
+
+                                    if (verifyIfStringInFileExists("export {};", getSrcFileAbsolutePath("store/index.ts")))
+                                    {
+                                        //Remove default export {}; from index
+                                        actions.push({
+                                            type: 'modify',
+                                            pattern: /(export\s*\{\s*\};)/gi,
+                                            path: storeDirectory + 'index.ts',
+                                            template: ''
+                                        });
+                                    }
+
+                                    //Append actions class to store index
+                                    actions.push({
+                                        type: 'append',
+                                        path: storeDirectory + 'index.ts',
+                                        template: 'export { {{ pascalCase substateNoWsName}}Actions } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers\';'
+                                    });
+
+                                    //Add actions class import to store module
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'store.module.ts',
+                                        pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                        template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
+                                    });
+
+                                    //Add actions class to store module provide
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'store.module.ts',
+                                        pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                        template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
+                                    });
+                                }
+
                                 //Append generic substate reducer import to store
                                 actions.push({
                                     type: 'modify',
@@ -492,53 +503,134 @@ module.exports = function (plop)
                                     template: '\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer,$1'
                                 });
                             }
-                            else if (data.substateNoWsStaticMountOnComponent && data.substateNoWsStaticMountOnComponent.length)
+                            else
                             {
-                                if (!data.substateNoWsStaticMountOnComponent.endsWith('.ts'))
-                                    data.substateNoWsStaticMountOnComponent += '.ts';
-                                var path = getSrcFileRelativePath(data.substateNoWsStaticMountOnComponent);
-
-                                if (path)
+                                //Dynamic on component mount
+                                if (data.substateNoWsStaticMountOnComponent && data.substateNoWsStaticMountOnComponent.length)
                                 {
-                                    if (verifyIfStringInFileExists("@Component", getSrcFileAbsolutePath(data.substateNoWsStaticMountOnComponent)))
+                                    if (!data.substateNoWsStaticMountOnComponent.endsWith('.ts'))
+                                        data.substateNoWsStaticMountOnComponent += '.ts';
+                                    var path = getSrcFileAbsolutePath(data.substateNoWsStaticMountOnComponent);
+
+                                    if (path)
                                     {
-                                        if (!verifyIfStringInFileExists("@ReducerInjector", getSrcFileAbsolutePath(data.substateNoWsStaticMountOnComponent)))
+                                        if (verifyIfStringInFileExists("@Component", path))
                                         {
-                                            //Append ReducerInjector decorator import
+                                            if (!verifyIfStringInFileExists("@ReducerInjector", path))
+                                            {
+                                                if (!verifyIfStringInFileExists("@redux-multipurpose/core", path))
+                                                {
+                                                    //Append ReducerInjector decorator import
+                                                    actions.push({
+                                                        type: 'modify',
+                                                        path,
+                                                        pattern: /('@angular\/core';*)/gi,
+                                                        template: '$1\n\nimport { ReducerInjector } from \'@redux-multipurpose/core\';\n'
+                                                    });
+                                                }
+                                                else
+                                                {
+                                                    //Append ReducerInjector decorator to core imports
+                                                    actions.push({
+                                                        type: 'modify',
+                                                        path,
+                                                        pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core)/gi,
+                                                        template: ', ReducerInjector$1'
+                                                    });
+                                                }
+
+                                                //Append ReducerInjector decorator
+                                                actions.push({
+                                                    type: 'modify',
+                                                    path,
+                                                    pattern: /(@Component\s*\(\s*\{(.|\n)*\}\s*\))(\s|\n)*(export\s)/gi,
+                                                    template: '$1\n@ReducerInjector([])\n$4'
+                                                });
+                                            }
+
+                                            //Append dynamic reducer import
                                             actions.push({
                                                 type: 'modify',
                                                 path,
-                                                pattern: /('@angular\/core';*)/gi,
-                                                template: '$1\n\nimport { ReducerInjector } from \'@redux-multipurpose/core\';\n'
+                                                pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core\s*\'\s*;\s*\n)/gi,
+                                                template: '$1import { {{ camelCase substateNoWsName}}Reducer } from \'' + getStoreDirectory(false) + '{{ camelCase substateNoWsName}}/{{ camelCase substateNoWsName}}.slice\';\n'
                                             });
 
-                                            //Append ReducerInjector decorator
+                                            //Append dynamic reducer into decorator
                                             actions.push({
                                                 type: 'modify',
                                                 path,
-                                                pattern: /(@Component((.|\n)*)\}\))/gi,
-                                                template: '$1\n@ReducerInjector([])'
+                                                pattern: /(@ReducerInjector\s*\(\s*\[(\s*\{(.|\n)*\}\s*,\s*)*)/gi,
+                                                templateFile: 'templates/substate/substate.component-injection.tpl'
                                             });
                                         }
-
-                                        //Append dynamic reducer import
-                                        actions.push({
-                                            type: 'modify',
-                                            path,
-                                            pattern: /(import { ReducerInjector((.)*\n))/gi,
-                                            template: '$1import { {{ camelCase substateNoWsName}}Reducer } from \'' + getStoreDirectory(false) + '{{ camelCase substateNoWsName}}/{{ camelCase substateNoWsName}}.slice\';\n'
-                                        });
-
-                                        //Append dynamic reducer into decorator
-                                        actions.push({
-                                            type: 'modify',
-                                            path,
-                                            pattern: /(@ReducerInjector\(\[({(.|\n)*},\s)*)/gi,
-                                            templateFile: 'templates/ws-substate/ws.component-injection.tpl'
-                                        });
+                                        else
+                                            console.log("File " + path + " not recognized as a component");
                                     }
-                                    else
-                                        console.log("File " + path + " not recognized as a component");
+                                }
+
+                                //Dynamic on component unmount
+                                if (data.substateNoWsStaticUnmountOnComponent && data.substateNoWsStaticUnmountOnComponent.length)
+                                {
+                                    if (!data.substateNoWsStaticUnmountOnComponent.endsWith('.ts'))
+                                        data.substateNoWsStaticUnmountOnComponent += '.ts';
+                                    var path = getSrcFileAbsolutePath(data.substateNoWsStaticUnmountOnComponent);
+
+                                    if (path)
+                                    {
+                                        if (verifyIfStringInFileExists("@Component", path))
+                                        {
+                                            if (!verifyIfStringInFileExists("@ReducerDeallocator", path))
+                                            {
+                                                if (!verifyIfStringInFileExists("@redux-multipurpose/core", path))
+                                                {
+                                                    //Append ReducerDeallocator decorator import
+                                                    actions.push({
+                                                        type: 'modify',
+                                                        path,
+                                                        pattern: /('@angular\/core';*)/gi,
+                                                        template: '$1\n\nimport { ReducerDeallocator } from \'@redux-multipurpose/core\';\n'
+                                                    });
+                                                }
+                                                else
+                                                {
+                                                    //Append ReducerDeallocator decorator to core imports
+                                                    actions.push({
+                                                        type: 'modify',
+                                                        path,
+                                                        pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core)/gi,
+                                                        template: ', ReducerDeallocator$1'
+                                                    });
+                                                }
+
+                                                //Append ReducerDeallocator decorator
+                                                if (verifyIfStringInFileExists("@ReducerInjector", path))
+                                                    actions.push({
+                                                        type: 'modify',
+                                                        path,
+                                                        pattern: /(@ReducerInjector\s*\(\s*\[(.|\n)*\]\s*\))/gi,
+                                                        template: '$1\n@ReducerDeallocator([])'
+                                                    });
+                                                else
+                                                    actions.push({
+                                                        type: 'modify',
+                                                        path,
+                                                        pattern: /(@Component\s*\(\s*\{(.|\n)*\}\s*\))/gi,
+                                                        template: '$1\n@ReducerDeallocator([])'
+                                                    });
+                                            }
+
+                                            //Append dynamic reducer into decorator
+                                            /*actions.push({
+                                                type: 'modify',
+                                                path,
+                                                pattern: /(@ReducerDeallocator)/gi,
+                                                template: '$1{{ camelCase substateNoWsName }},'
+                                            });*/
+                                        }
+                                        else
+                                            console.log("File " + path + " not recognized as a component");
+                                    }
                                 }
                             }
                         }
