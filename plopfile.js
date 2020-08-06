@@ -996,10 +996,9 @@ module.exports = function (plop)
                 }
                 else if (data.operation === 'persist')
                 {
-                    if (data.persistSubstate && data.persistSubstate.length && verifyIfWholeWordInFileExists(data.persistSubstate, getSrcFileAbsolutePath("store/store.reducer.ts")))
+                    if (data.persistSubstate && data.persistSubstate.length && verifyIfWholeWordInFileExists(camelCase(data.persistSubstate), getSrcFileAbsolutePath("store.reducer.ts")))
                     {
-                        const regex = /\:\s*/gi;
-                        const reducerRegex = new RegExp(data.persistSubstate + 'Reducer,', 'gi');
+                        const regex = new RegExp(camelCase(data.persistSubstate) + /\s*\:\s*/.source + camelCase(data.persistSubstate) + "Reducer");
 
                         if (data.persistSecure)
                         {
@@ -1007,8 +1006,8 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
-                                pattern: new RegExp(regex.source + reducerRegex.source),
-                                template: ': {{persistSubstate}}SecurePersistedReducer,'
+                                pattern: regex,
+                                template: '{{persistSubstate}}: {{persistSubstate}}SecurePersistedReducer'
                             });
 
                             const key = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -1017,8 +1016,8 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
-                                pattern: /(\/\/Persisted reducers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                template: 'const {{persistSubstate}}SecurePersistedReducer = createSecureStoredReducer(\'{{persistSubstate}}\', \'' + key + '\', storage, {{persistSubstate}}Reducer);\n\t$1'
+                                pattern: /(export\s*function\s*rootReducer\s*\(.+?(?=\))\)\s*\{\s*)/gi,
+                                template: '$1const {{persistSubstate}}SecurePersistedReducer = createSecureStoredReducer(\'{{persistSubstate}}\', \'' + key + '\', storage, {{persistSubstate}}Reducer);\n\n\t'
                             });
                         }
                         else
@@ -1027,16 +1026,16 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
-                                pattern: new RegExp(regex.source + reducerRegex.source),
-                                template: ': {{persistSubstate}}PersistedReducer,'
+                                pattern: regex,
+                                template: '{{persistSubstate}}: {{persistSubstate}}PersistedReducer'
                             });
     
                             //Add persisted reducer creation
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
-                                pattern: /(\/\/Persisted reducers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                template: 'const {{persistSubstate}}PersistedReducer = createStoredReducer(\'{{persistSubstate}}\', storage, {{persistSubstate}}Reducer);\n\t$1'
+                                pattern: /(export\s*function\s*rootReducer\s*\(.+?(?=\))\)\s*\{\s*)/gi,     //  .+?(?=abc) Match any characters as few as possible until a "abc" is found, without counting the "abc".
+                                template: '$1const {{persistSubstate}}PersistedReducer = createStoredReducer(\'{{persistSubstate}}\', storage, {{persistSubstate}}Reducer);\n\n\t'
                             });
                         }
                     }
