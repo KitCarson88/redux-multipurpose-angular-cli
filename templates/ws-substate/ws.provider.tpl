@@ -5,5 +5,4 @@ import { Injectable } from '@angular/core';
 })
 export class {{ pascalCase substateWsProvider }}Provider
 {
-    //Provider calls: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
 }

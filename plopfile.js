@@ -554,7 +554,7 @@ module.exports = function (plop)
                                                     actions.push({
                                                         type: 'modify',
                                                         path,
-                                                        pattern: /('@angular\/core';*)/gi,
+                                                        pattern: /('@angular\/core';*)/,
                                                         template: '$1\n\nimport { ReducerInjector } from \'@redux-multipurpose/core\';\n'
                                                     });
                                                 }
@@ -564,7 +564,7 @@ module.exports = function (plop)
                                                     actions.push({
                                                         type: 'modify',
                                                         path,
-                                                        pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core)/gi,
+                                                        pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core)/,
                                                         template: ', ReducerInjector$1'
                                                     });
                                                 }
@@ -582,7 +582,7 @@ module.exports = function (plop)
                                             actions.push({
                                                 type: 'modify',
                                                 path,
-                                                pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core\s*\'\s*;\s*\n)/gi,
+                                                pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core\s*\'\s*;\s*\n)/,
                                                 template: '$1import { {{ camelCase substateNoWsName}}Reducer } from \'' + getStoreDirectory(false) + '{{ camelCase substateNoWsName}}/{{ camelCase substateNoWsName}}.slice\';\n'
                                             });
 
@@ -618,7 +618,7 @@ module.exports = function (plop)
                                                     actions.push({
                                                         type: 'modify',
                                                         path,
-                                                        pattern: /('@angular\/core';*)/gi,
+                                                        pattern: /('@angular\/core';*)/,
                                                         template: '$1\n\nimport { ReducerDeallocator } from \'@redux-multipurpose/core\';\n'
                                                     });
                                                 }
@@ -628,7 +628,7 @@ module.exports = function (plop)
                                                     actions.push({
                                                         type: 'modify',
                                                         path,
-                                                        pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core)/gi,
+                                                        pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core)/,
                                                         template: ', ReducerDeallocator$1'
                                                     });
                                                 }
@@ -774,11 +774,6 @@ module.exports = function (plop)
                                 });
                         }
 
-                        //Set a flag before provider creation to detect first initialization
-                        var providerCreation = false;
-                        if (!getSrcFileRelativePath(kebabCase(data.substateWsProvider)))
-                            providerCreation = true;
-
                         //Create new provider class if doesn't exist yet
                         actions.push({
                             type: 'add',
@@ -791,7 +786,7 @@ module.exports = function (plop)
                         actions.push({
                             type: 'add',
                             path: '{{cwd}}/src/providers/index.ts',
-                            template: '',
+                            template: 'export { {{ pascalCase substateWsProvider }}Provider } from \'./{{ dashCase substateWsProvider }}\';',
                             abortOnFail: false
                         });
 
@@ -799,76 +794,76 @@ module.exports = function (plop)
                         actions.push({
                             type: 'modify',
                             path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
-                            pattern: /(\/\/Provider calls: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
+                            pattern: /(export\s*class\s*\w*Provider\b\s*\n*\{)/,
                             templateFile: 'templates/ws-substate/ws.provider-call.tpl'
                         });
 
-                        if (providerCreation)
-                        {
-                            //Append provider to index
+                        //Append provider to index
+                        var indexPath = getSrcFileAbsolutePath("providers/index.ts");
+                        if (indexPath && !verifyIfStringInFileExists(pascalCase(data.substateWsProvider) + "Provider", indexPath))
                             actions.push({
                                 type: 'append',
                                 path: '{{cwd}}/src/providers/index.ts',
                                 template: 'export { {{ pascalCase substateWsProvider }}Provider } from \'./{{ dashCase substateWsProvider }}\';'
                             });
 
-                            //If providers import exists, add a new one
-                            var slicePath = getSrcFileAbsolutePath('ws.slice.ts');
-                            if (slicePath && verifyIfStringInFileExists('../../providers', slicePath))
-                                actions.push({
-                                    type: 'modify',
-                                    path: storeDirectory + 'ws/ws.slice.ts',
-                                    pattern: /(\n} from \'..\/..\/providers)/gi,
-                                    template: ',\n\t{{ pascalCase substateWsProvider }}Provider$1'
-                                });
-                            else
-                                actions.push({
-                                    type: 'modify',
-                                    path: storeDirectory + 'ws/ws.slice.ts',
-                                    pattern: /(\/\/Ws providers imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                    template: 'import {\n\t{{ pascalCase substateWsProvider }}Provider\n} from \'../../providers\';\n$1'
-                                });
+                        var slicePath = getSrcFileAbsolutePath("ws.slice.ts");
+                        if (slicePath && !verifyIfStringInFileExists(pascalCase(data.substateWsProvider) + "Provider", slicePath))
+                        {
+                            //Add the new provider import
+                            actions.push({
+                                type: 'modify',
+                                path: storeDirectory + 'ws/ws.slice.ts',
+                                pattern: /(\n\s*}\s*from\s*\'..\/..\/providers)/,
+                                template: ',\n\t{{ pascalCase substateWsProvider }}Provider$1'
+                            });
 
                             //Append provider provide to ws slice
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.slice.ts',
-                                pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                template: '\n\t{ provide: {{ pascalCase substateWsProvider }}Provider },$1'
+                                pattern: /(Injector\s*\.\s*create\s*\(\s*\{\s*providers\s*\:\s*\[(\s*\n*\{\s*provide\s*\:\s*\w*Provider\b\s*\}\,*)*)/gi,
+                                template: '$1,\n\t{ provide: {{ pascalCase substateWsProvider }}Provider }'
                             });
 
                             //Append provider instance to ws slice
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.slice.ts',
-                                pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER\s*\t*\n*]*}*\)*;*)/gi,
+                                pattern: /(\]\s*\n*\}\s*\n*\)\s*\n*\;\n(\s*\n*const\s*\w*Provider\b\s*\=\s*wsProvidersInjector\s*\.\s*get\s*\(\s*\w*Provider\b\)\s*\;)*)/gi,
                                 template: '$1\nconst {{camelCase substateWsProvider}}Provider = wsProvidersInjector.get({{pascalCase substateWsProvider}}Provider);'
                             });
                         }
 
                         //Append new thunk to ws slice
-                        actions.push({
-                            type: 'modify',
-                            path: storeDirectory + 'ws/ws.slice.ts',
-                            pattern: /(\s*\t*\/\/Ws thunks: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                            template: '\nexport const {{ camelCase substateWsAction }}Thunk = prepareThunk(\'ws\', \'{{ camelCase substateWsAction }}\', {{camelCase substateWsProvider}}Provider.{{ camelCase substateWsAction }});$1'
-                        });
+                        if (slicePath && !verifyIfStringInFileExists(camelCase(data.substateWsAction) + "Thunk", slicePath))
+                            actions.push({
+                                type: 'modify',
+                                path: storeDirectory + 'ws/ws.slice.ts',
+                                pattern: /(export\s*const\s*\w*Thunk\b)/,
+                                template: 'export const {{ camelCase substateWsAction }}Thunk = prepareThunk(\'ws\', \'{{ camelCase substateWsAction }}\', {{camelCase substateWsProvider}}Provider.{{ camelCase substateWsAction }});\n$1'
+                            });
 
-                        //Append thunk import in ws selectors dispatchers file
-                        actions.push({
-                            type: 'modify',
-                            path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
-                            pattern: /(\/\/Thunks imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                            template: '{{ camelCase substateWsAction }}Thunk,\n\t$1'
-                        });
+                        var selectorsDispatchersPath = getSrcFileAbsolutePath("ws.selectors-dispatchers.ts");
+                        
+                        if (selectorsDispatchersPath && !verifyIfStringInFileExists(camelCase(data.substateWsAction) + "Thunk", selectorsDispatchersPath))
+                        {
+                            //Append thunk import in ws selectors dispatchers file
+                            actions.push({
+                                type: 'modify',
+                                path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
+                                pattern: /(\n\s*\}\s*from\s*\'\.\/ws\.slice\'\s*\;)/,
+                                template: ',\n\t{{ camelCase substateWsAction }}Thunk$1'
+                            });
 
-                        //Append new action to trigger thunk execution
-                        actions.push({
-                            type: 'modify',
-                            path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
-                            pattern: /(\/\/Actions: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                            templateFile: 'templates/ws-substate/ws.action.tpl'
-                        });
+                            //Append new action to trigger thunk execution
+                            actions.push({
+                                type: 'modify',
+                                path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
+                                pattern: /(export\s*class\s*WsActions\s*\n*\{)/,
+                                templateFile: 'templates/ws-substate/ws.action.tpl'
+                            });
+                        }
 
                         //Ws substate data adapter logics
                         if (data.substateWsUseAdapter)

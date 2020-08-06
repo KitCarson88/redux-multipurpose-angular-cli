@@ -7,15 +7,18 @@ import {
     INITIAL_STATE_WEB_SERVICES
 } from './ws.model';
 
-//Ws providers imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
+import {
+    {{ pascalCase substateWsProvider }}Provider
+} from '../../providers';
 
 //Manually inject providers
 const wsProvidersInjector = Injector.create({ providers: [
-    //Ws providers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
+    { provide: {{ pascalCase substateWsProvider }}Provider }
 ]});
+const {{camelCase substateWsProvider}}Provider = wsProvidersInjector.get({{pascalCase substateWsProvider}}Provider);
 
 //Thunks
-//Ws thunks: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
+export const {{ camelCase substateWsAction }}Thunk = prepareThunk('ws', '{{ camelCase substateWsAction }}', {{camelCase substateWsProvider}}Provider.{{ camelCase substateWsAction }});
 
 //Ws actions and reducers
 const wsSlice = createSlice({
