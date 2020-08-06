@@ -505,8 +505,8 @@ module.exports = function (plop)
                                     actions.push({
                                         type: 'modify',
                                         path: storeDirectory + 'store.module.ts',
-                                        pattern: /(const ACTIONS = \[)/gi,
-                                        template: '$1\n\t{{ pascalCase substateNoWsName}}Actions,'
+                                        pattern: /(const\s*ACTIONS\s*=\s*\[(\s*\n*\w*Actions\b\,*)*)/gi,
+                                        template: '$1,\n\t{{ pascalCase substateNoWsName}}Actions'
                                     });
 
                                 //Append generic substate reducer import to store
@@ -529,7 +529,7 @@ module.exports = function (plop)
                                     actions.push({
                                         type: 'modify',
                                         path: storeDirectory + 'store.reducer.ts',
-                                        pattern: /(return\s*\n*\{\s*\n*([a-zA-Z0-9_])*\s*\:\s*([a-zA-Z0-9_])*)/,
+                                        pattern: /(return\s*\n*\{(\s*\n*\w*\s*\:\s*\w*Reducer\b\,*)*)/,
                                         template: '$1,\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer'
                                     });
                             }
@@ -699,7 +699,7 @@ module.exports = function (plop)
                         //If ws files are just created
                         if (wsCreation)
                         {
-                            //Append generic ws reducer import to store
+                            //Append ws reducer import to store
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
@@ -707,7 +707,7 @@ module.exports = function (plop)
                                 template: 'import { wsReducer } from \'./ws/ws.slice\';\n$1'
                             });
 
-                            //Append generic ws reducer
+                            //Append ws reducer
                             if (verifyIfStringInFileExists("//Reducers:", getSrcFileAbsolutePath('store.reducer.ts')))
                                 actions.push({
                                     type: 'modify',
@@ -719,7 +719,7 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.reducer.ts',
-                                    pattern: /(return\s*\n*\{\s*\n*([a-zA-Z0-9_])*\s*\:\s*([a-zA-Z0-9_])*)/,
+                                    pattern: /(return\s*\n*\{(\s*\n*\w*\s*\:\s*\w*Reducer\b\,*)*)/,
                                     template: '$1,\n\t\tws: wsReducer'
                                 });
 
@@ -769,8 +769,8 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'store.module.ts',
-                                    pattern: /(const ACTIONS = \[)/gi,
-                                    template: '$1\n\tWsActions,'
+                                    pattern: /(const\s*ACTIONS\s*=\s*\[(\s*\n*\w*Actions\b\,*)*)/gi,
+                                    template: '$1,\n\tWsActions'
                                 });
                         }
 
