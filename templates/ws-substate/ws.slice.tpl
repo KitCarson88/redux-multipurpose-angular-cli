@@ -7,15 +7,15 @@ import {
     INITIAL_STATE_WEB_SERVICES
 } from './ws.model';
 
-//Ws providers imports: PLEASE DON'T DELETE THIS PLACEHOLDER
+//Ws providers imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
 
 //Manually inject providers
 const wsProvidersInjector = Injector.create({ providers: [
-    //Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER
+    //Ws providers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
 ]});
 
 //Thunks
-//Ws thunks: PLEASE DON'T DELETE THIS PLACEHOLDER
+//Ws thunks: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
 
 //Ws actions and reducers
 const wsSlice = createSlice({
@@ -27,7 +27,7 @@ const wsSlice = createSlice({
         }
     },
     extraReducers: prepareThunkActionReducers([
-        //Ws prepare thunks: PLEASE DON'T DELETE THIS PLACEHOLDER
+        //Ws prepare thunks: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
     ])
 });
 

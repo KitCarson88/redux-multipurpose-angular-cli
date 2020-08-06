@@ -478,20 +478,36 @@ module.exports = function (plop)
                                 });
 
                                 //Add actions class import to store module
-                                actions.push({
-                                    type: 'modify',
-                                    path: storeDirectory + 'store.module.ts',
-                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
-                                });
+                                if (verifyIfStringInFileExists("//Actions imports:", getSrcFileAbsolutePath('store.module.ts')))
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'store.module.ts',
+                                        pattern: /(\/\/Actions imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
+                                        template: '{{ pascalCase substateNoWsName}}Actions'
+                                    });
+                                else
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'store.module.ts',
+                                        pattern: /(\n\s*\}\s*from\s*\'.\/index\'\s*;)/gi,
+                                        template: ',\n\t{{ pascalCase substateNoWsName}}Actions$1'
+                                    });
 
                                 //Add actions class to store module provide
-                                actions.push({
-                                    type: 'modify',
-                                    path: storeDirectory + 'store.module.ts',
-                                    pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
-                                });
+                                if (verifyIfStringInFileExists("//Actions:", getSrcFileAbsolutePath('store.module.ts')))
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'store.module.ts',
+                                        pattern: /(\/\/Actions: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
+                                        template: '{{ pascalCase substateNoWsName}}Actions'
+                                    });
+                                else
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'store.module.ts',
+                                        pattern: /(const ACTIONS = \[)/gi,
+                                        template: '$1\n\t{{ pascalCase substateNoWsName}}Actions,'
+                                    });
 
                                 //Append generic substate reducer import to store
                                 actions.push({
@@ -502,12 +518,20 @@ module.exports = function (plop)
                                 });
 
                                 //Append generic substate reducer
-                                actions.push({
-                                    type: 'modify',
-                                    path: storeDirectory + 'store.reducer.ts',
-                                    pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                    template: '\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer,$1'
-                                });
+                                if (verifyIfStringInFileExists("//Reducers:", getSrcFileAbsolutePath('store.reducer.ts')))
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'store.reducer.ts',
+                                        pattern: /(\/\/Reducers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
+                                        template: '{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer'
+                                    });
+                                else
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'store.reducer.ts',
+                                        pattern: /(return\s*\n*\{\s*\n*([a-zA-Z0-9_])*\s*\:\s*([a-zA-Z0-9_])*)/,
+                                        template: '$1,\n\t\t{{ camelCase substateNoWsName }}: {{ camelCase substateNoWsName }}Reducer'
+                                    });
                             }
                             else
                             {
@@ -675,7 +699,7 @@ module.exports = function (plop)
                         //If ws files are just created
                         if (wsCreation)
                         {
-                            //Append generic substate reducer import to store
+                            //Append generic ws reducer import to store
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
@@ -683,13 +707,21 @@ module.exports = function (plop)
                                 template: 'import { wsReducer } from \'./ws/ws.slice\';\n$1'
                             });
 
-                            //Append generic substate reducer
-                            actions.push({
-                                type: 'modify',
-                                path: storeDirectory + 'store.reducer.ts',
-                                pattern: /(\s*\t*\/\/Reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                template: '\n\t\tws: wsReducer,$1'
-                            });
+                            //Append generic ws reducer
+                            if (verifyIfStringInFileExists("//Reducers:", getSrcFileAbsolutePath('store.reducer.ts')))
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.reducer.ts',
+                                    pattern: /(\/\/Reducers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
+                                    template: 'ws: wsReducer'
+                                });
+                            else
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.reducer.ts',
+                                    pattern: /(return\s*\n*\{\s*\n*([a-zA-Z0-9_])*\s*\:\s*([a-zA-Z0-9_])*)/,
+                                    template: '$1,\n\t\tws: wsReducer'
+                                });
 
                             if (matchRegex(/(export\s*\{\s*\}\s*;)/gi, getSrcFileAbsolutePath("store/index.ts")))
                             {
@@ -710,20 +742,36 @@ module.exports = function (plop)
                             });
 
                             //Append Ws actions class import to store module
-                            actions.push({
-                                type: 'modify',
-                                path: storeDirectory + 'store.module.ts',
-                                pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                template: 'WsActions,\n\t$1'
-                            });
+                            if (verifyIfStringInFileExists("//Actions imports:", getSrcFileAbsolutePath('store.module.ts')))
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.module.ts',
+                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
+                                    template: 'WsActions'
+                                });
+                            else
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.module.ts',
+                                    pattern: /(\n\s*\}\s*from\s*\'.\/index\'\s*;)/gi,
+                                    template: ',\n\tWsActions$1'
+                                });
 
                             //Append Ws actions class provide to store module
-                            actions.push({
-                                type: 'modify',
-                                path: storeDirectory + 'store.module.ts',
-                                pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                template: 'WsActions,\n\t$1'
-                            });
+                            if (verifyIfStringInFileExists("//Actions:", getSrcFileAbsolutePath('store.module.ts')))
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.module.ts',
+                                    pattern: /(\/\/Actions: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
+                                    template: 'WsActions'
+                                });
+                            else
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.module.ts',
+                                    pattern: /(const ACTIONS = \[)/gi,
+                                    template: '$1\n\tWsActions,'
+                                });
                         }
 
                         //Set a flag before provider creation to detect first initialization
@@ -751,7 +799,7 @@ module.exports = function (plop)
                         actions.push({
                             type: 'modify',
                             path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
-                            pattern: /(\/\/Provider calls: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                            pattern: /(\/\/Provider calls: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                             templateFile: 'templates/ws-substate/ws.provider-call.tpl'
                         });
 
@@ -777,7 +825,7 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'ws/ws.slice.ts',
-                                    pattern: /(\/\/Ws providers imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    pattern: /(\/\/Ws providers imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                     template: 'import {\n\t{{ pascalCase substateWsProvider }}Provider\n} from \'../../providers\';\n$1'
                                 });
 
@@ -785,7 +833,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.slice.ts',
-                                pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                 template: '\n\t{ provide: {{ pascalCase substateWsProvider }}Provider },$1'
                             });
 
@@ -793,7 +841,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.slice.ts',
-                                pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE THIS PLACEHOLDER\s*\t*\n*]*}*\)*;*)/gi,
+                                pattern: /(\s*\t*\/\/Ws providers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER\s*\t*\n*]*}*\)*;*)/gi,
                                 template: '$1\nconst {{camelCase substateWsProvider}}Provider = wsProvidersInjector.get({{pascalCase substateWsProvider}}Provider);'
                             });
                         }
@@ -802,7 +850,7 @@ module.exports = function (plop)
                         actions.push({
                             type: 'modify',
                             path: storeDirectory + 'ws/ws.slice.ts',
-                            pattern: /(\s*\t*\/\/Ws thunks: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                            pattern: /(\s*\t*\/\/Ws thunks: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                             template: '\nexport const {{ camelCase substateWsAction }}Thunk = prepareThunk(\'ws\', \'{{ camelCase substateWsAction }}\', {{camelCase substateWsProvider}}Provider.{{ camelCase substateWsAction }});$1'
                         });
 
@@ -810,7 +858,7 @@ module.exports = function (plop)
                         actions.push({
                             type: 'modify',
                             path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
-                            pattern: /(\/\/Thunks imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                            pattern: /(\/\/Thunks imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                             template: '{{ camelCase substateWsAction }}Thunk,\n\t$1'
                         });
 
@@ -818,7 +866,7 @@ module.exports = function (plop)
                         actions.push({
                             type: 'modify',
                             path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
-                            pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                            pattern: /(\/\/Actions: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                             templateFile: 'templates/ws-substate/ws.action.tpl'
                         });
 
@@ -836,7 +884,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.model.ts',
-                                pattern: /(\/\/Dto imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                pattern: /(\/\/Dto imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                 template: 'import { {{ pascalCase substateWsName }}DTO } from \'../../entities/dto/{{ camelCase substateWsName }}DTO\';\n$1'
                             });
 
@@ -852,7 +900,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.model.ts',
-                                pattern: /(\s*\t*\/\/Ws data: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                pattern: /(\s*\t*\/\/Ws data: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                 template: '\n\t{ \'{{ camelCase substateWsName }}\': { data: {{ camelCase substateWsName }}Adapter.getInitialState() }},$1'
                             });
 
@@ -882,7 +930,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.slice.ts',
-                                pattern: /(\s*\t*\/\/Ws prepare thunks: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                pattern: /(\s*\t*\/\/Ws prepare thunks: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                 template: '\n\t\t{ thunk: {{ camelCase substateWsAction }}Thunk, substate: \'{{ camelCase substateWsName }}\', adapter: {{ camelCase substateWsName }}Adapter },$1'
                             });
 
@@ -890,7 +938,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
-                                pattern: /(\/\/Adapters imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                pattern: /(\/\/Adapters imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                 template: 'import { {{ camelCase substateWsName }}Adapter } from \'./ws.model\';\n$1'
                             });
 
@@ -898,7 +946,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
-                                pattern: /(\/\/Selectors: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                pattern: /(\/\/Selectors: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                 templateFile: 'templates/ws-substate/ws.selectors.tpl'
                             });
                         }
@@ -908,7 +956,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.model.ts',
-                                pattern: /(\s*\t*\/\/Ws data: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                pattern: /(\s*\t*\/\/Ws data: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                 template: '\n\t\'{{ camelCase substateWsName }}\',$1'
                             });
 
@@ -916,7 +964,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.slice.ts',
-                                pattern: /(\s*\t*\/\/Ws prepare thunks: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                pattern: /(\s*\t*\/\/Ws prepare thunks: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                 template: '\n\t\t{ thunk: {{ camelCase substateWsAction }}Thunk, substate: \'{{ camelCase substateWsName }}\', adapter: null },$1'
                             });
                         }
@@ -945,7 +993,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
-                                pattern: /(\/\/Persisted reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                pattern: /(\/\/Persisted reducers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                 template: 'const {{persistSubstate}}SecurePersistedReducer = createSecureStoredReducer(\'{{persistSubstate}}\', \'' + key + '\', storage, {{persistSubstate}}Reducer);\n\t$1'
                             });
                         }
@@ -963,7 +1011,7 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
-                                pattern: /(\/\/Persisted reducers: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                pattern: /(\/\/Persisted reducers: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                 template: 'const {{persistSubstate}}PersistedReducer = createStoredReducer(\'{{persistSubstate}}\', storage, {{persistSubstate}}Reducer);\n\t$1'
                             });
                         }
@@ -994,7 +1042,7 @@ module.exports = function (plop)
                                     actions.push({
                                         type: 'modify',
                                         path: storeDirectory + '{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics.ts',
-                                        pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                        pattern: /(\/\/Actions imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                         template: '{{ camelCase epicOnTriggerAction }},\n\t$1'
                                     });
                                 }
@@ -1023,7 +1071,7 @@ module.exports = function (plop)
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
-                                            pattern: /(\/\/Epics imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                            pattern: /(\/\/Epics imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                             template: 'import { {{ camelCase epicName }} } from \'./{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics\';\n$1'
                                         });
                                     }
@@ -1031,7 +1079,7 @@ module.exports = function (plop)
                                     actions.push({
                                         type: 'modify',
                                         path: storeDirectory + 'epics.ts',
-                                        pattern: /(\/\/Epics: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                        pattern: /(\/\/Epics: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
                                         template: '{{ camelCase epicName }}(),\n\t\t$1'
                                     });
                                 }
