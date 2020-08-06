@@ -30,7 +30,7 @@ const wsSlice = createSlice({
         }
     },
     extraReducers: prepareThunkActionReducers([
-        //Ws prepare thunks: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
+        { thunk: {{ camelCase substateWsAction }}Thunk, substate: '{{ camelCase substateWsName }}', adapter: {{#if substateWsNotUseAdapter}}null{{/if}}{{#if substateWsUseAdapter}}{{ camelCase substateWsName }}Adapter{{/if}} }
     ])
 });
 

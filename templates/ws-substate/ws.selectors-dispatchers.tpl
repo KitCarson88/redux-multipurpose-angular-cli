@@ -6,8 +6,12 @@ import { createSelector } from '@reduxjs/toolkit';
 import {
     {{ camelCase substateWsAction }}Thunk
 } from './ws.slice';
-//Adapters imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
-//Selectors: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
+{{#if substateWsUseAdapter}}
+
+import {
+    {{ camelCase substateWsName }}Adapter
+} from './ws.model';
+{{/if}}
 
 @Injectable()
 export class WsActions

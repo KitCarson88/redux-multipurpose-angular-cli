@@ -1,9 +1,12 @@
 import { createEntityAdapter } from '@reduxjs/toolkit';
 
 import { createWsInitialState } from '@redux-multipurpose/core';
+{{#if substateWsUseAdapter}}
 
-//Dto imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
+import { {{ pascalCase substateWsName }}DTO } from '../../entities/dto/{{ camelCase substateWsName }}DTO';
+{{/if}}
 
-export const INITIAL_STATE_WEB_SERVICES = createWsInitialState([
-    //Ws data: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER
+export const INITIAL_STATE_WEB_SERVICES = createWsInitialState([{{#if substateWsNotUseAdapter}}
+    '{{ camelCase substateWsName }}'{{/if}}{{#if substateWsUseAdapter}}
+    { '{{ camelCase substateWsName }}': { data: {{ camelCase substateWsName }}Adapter.getInitialState() }}{{/if}}
 ]);

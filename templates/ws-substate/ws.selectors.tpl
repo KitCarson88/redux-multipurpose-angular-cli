@@ -17,4 +17,5 @@ export const {{ camelCase substateWsName }}Count =
         [{{ camelCase substateWsName }}],
         (items) => items? {{ camelCase substateWsName }}Selectors.selectTotal(items) : null
     );
+
 $1

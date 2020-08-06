@@ -866,6 +866,7 @@ module.exports = function (plop)
                         }
 
                         //Ws substate data adapter logics
+                        data.substateWsNotUseAdapter = !data.substateWsUseAdapter;
                         if (data.substateWsUseAdapter)
                         {
                             //Create ws substate data dto
@@ -875,29 +876,43 @@ module.exports = function (plop)
                                 templateFile: 'templates/ws-substate/ws.dto.tpl'
                             });
 
+                            var modelPath = getSrcFileAbsolutePath("ws.model.ts");
+
                             //Add dto import to ws substate model
-                            actions.push({
-                                type: 'modify',
-                                path: storeDirectory + 'ws/ws.model.ts',
-                                pattern: /(\/\/Dto imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                template: 'import { {{ pascalCase substateWsName }}DTO } from \'../../entities/dto/{{ camelCase substateWsName }}DTO\';\n$1'
-                            });
+                            if (modelPath && !verifyIfStringInFileExists(pascalCase(data.substateWsName) + "DTO", modelPath))
+                            {
+                                if (matchRegex(/(\w*DTO\b)/, modelPath))
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'ws/ws.model.ts',
+                                        pattern: /(\'\@redux\-multipurpose\/core'\s*\;\n*)/,
+                                        template: '$1import { {{ pascalCase substateWsName }}DTO } from \'../../entities/dto/{{ camelCase substateWsName }}DTO\';\n'
+                                    });
+                                else
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'ws/ws.model.ts',
+                                        pattern: /(\'\@redux\-multipurpose\/core'\s*\;\n*)/,
+                                        template: '$1import { {{ pascalCase substateWsName }}DTO } from \'../../entities/dto/{{ camelCase substateWsName }}DTO\';\n\n'
+                                    });
+                            }
 
                             //Add new data adapter to ws model
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.model.ts',
-                                pattern: /(export const INITIAL_STATE_WEB_SERVICES)/gi,
+                                pattern: /(export\s*\n*const\s*\n*INITIAL_STATE_WEB_SERVICES)/gi,
                                 templateFile: 'templates/ws-substate/ws.adapter.tpl'                               
                             });
 
                             //Append new data to ws model
-                            actions.push({
-                                type: 'modify',
-                                path: storeDirectory + 'ws/ws.model.ts',
-                                pattern: /(\s*\t*\/\/Ws data: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                template: '\n\t{ \'{{ camelCase substateWsName }}\': { data: {{ camelCase substateWsName }}Adapter.getInitialState() }},$1'
-                            });
+                            if (modelPath && !verifyIfStringInFileExists(camelCase(data.substateWsName) + "Adapter", modelPath))
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.model.ts',
+                                    pattern: /(INITIAL_STATE_WEB_SERVICES\s*\n*\=\s*\n*createWsInitialState\s*\n*\(\s*\n*\[\s*\n*)/gi,
+                                    template: '$1{ \'{{ camelCase substateWsName }}\': { data: {{ camelCase substateWsName }}Adapter.getInitialState() }},\n\t'
+                                });
 
                             actions.push({
                                 type: 'modify',
@@ -917,51 +932,65 @@ module.exports = function (plop)
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.slice.ts',
-                                pattern: /(INITIAL_STATE_WEB_SERVICES\n} from '.\/ws.model')/gi,
+                                pattern: /(INITIAL_STATE_WEB_SERVICES\s*\n*}\s*\n*from\s*\n*\'\.\/ws.model\')/gi,
                                 template: '{{ camelCase substateWsName }}Adapter,\n\t$1'
                             });
 
                             //Append substate reducer to ws slice
-                            actions.push({
-                                type: 'modify',
-                                path: storeDirectory + 'ws/ws.slice.ts',
-                                pattern: /(\s*\t*\/\/Ws prepare thunks: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                template: '\n\t\t{ thunk: {{ camelCase substateWsAction }}Thunk, substate: \'{{ camelCase substateWsName }}\', adapter: {{ camelCase substateWsName }}Adapter },$1'
-                            });
+                            if (slicePath && !verifyIfStringInFileExists(camelCase(data.substateWsAction) + "Thunk", slicePath))
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.slice.ts',
+                                    pattern: /(extraReducers\s*\n*\:\s*\n*prepareThunkActionReducers\s*\n*\(\s*\n*\[\s*\n*)/gi,
+                                    template: '$1{ thunk: {{ camelCase substateWsAction }}Thunk, substate: \'{{ camelCase substateWsName }}\', adapter: {{ camelCase substateWsName }}Adapter },\n\t\t'
+                                });
 
                             //Append adapter import to ws selectors dispatchers
-                            actions.push({
-                                type: 'modify',
-                                path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
-                                pattern: /(\/\/Adapters imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                template: 'import { {{ camelCase substateWsName }}Adapter } from \'./ws.model\';\n$1'
-                            });
+                            if (selectorsDispatchersPath && !verifyIfStringInFileExists(camelCase("substateWsName") + "Adapter", selectorsDispatchersPath))
+                            {
+                                if (!verifyIfStringInFileExists("'./ws.model'", selectorsDispatchersPath))
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
+                                        pattern: /(from\s*'.\/ws.slice';*)/,
+                                        template: '$1\n\nimport {\n\t{{ camelCase substateWsName }}Adapter\n} from \'./ws.model\';'
+                                    });
+                                else
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
+                                        pattern: /(import\s*\{(\s*\w*Adapter\b,*)+)/,
+                                        template: '$1,\n\t{{ camelCase substateWsName }}Adapter'
+                                    });
+                            }
 
                             //Append default with adapter selectors
                             actions.push({
                                 type: 'modify',
                                 path: storeDirectory + 'ws/ws.selectors-dispatchers.ts',
-                                pattern: /(\/\/Selectors: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
+                                pattern: /(\@Injectable\(\))/gi,
                                 templateFile: 'templates/ws-substate/ws.selectors.tpl'
                             });
                         }
                         else    //Not using ws substate data adapter logics
                         {
                             //Append new data to ws model
-                            actions.push({
-                                type: 'modify',
-                                path: storeDirectory + 'ws/ws.model.ts',
-                                pattern: /(\s*\t*\/\/Ws data: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                template: '\n\t\'{{ camelCase substateWsName }}\',$1'
-                            });
+                            if (modelPath && !verifyIfStringInFileExists("'" + camelCase(data.substateWsName) + "'", modelPath))
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.model.ts',
+                                    pattern: /(INITIAL_STATE_WEB_SERVICES\s*\n*\=\s*\n*createWsInitialState\s*\n*\(\s*\n*\[\s*\n*)/gi,
+                                    template: '$1\'{{ camelCase substateWsName }}\',\n\t'
+                                });
 
                             //Append substate reducer to ws slice
-                            actions.push({
-                                type: 'modify',
-                                path: storeDirectory + 'ws/ws.slice.ts',
-                                pattern: /(\s*\t*\/\/Ws prepare thunks: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                template: '\n\t\t{ thunk: {{ camelCase substateWsAction }}Thunk, substate: \'{{ camelCase substateWsName }}\', adapter: null },$1'
-                            });
+                            if (slicePath && !verifyIfStringInFileExists(camelCase(data.substateWsAction) + "Thunk", slicePath))
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'ws/ws.slice.ts',
+                                    pattern: /(extraReducers\s*\n*\:\s*\n*prepareThunkActionReducers\s*\n*\(\s*\n*\[\s*\n*)/gi,
+                                    template: '$1{ thunk: {{ camelCase substateWsAction }}Thunk, substate: \'{{ camelCase substateWsName }}\', adapter: null },\n\t\t'
+                                });
                         }
                     }
                 }
