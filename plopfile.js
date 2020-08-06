@@ -145,6 +145,16 @@ function verifyIfWholeWordInFileExists(value, pathFile)
     return ret;
 }
 
+function matchRegex(regex, pathFile)
+{
+    var file = fs.readFileSync(pathFile).toString();
+    const ret = file.match(regex);
+
+    console.log("Regex matched: ", ret);
+
+    return ret && ret.length > 0;
+}
+
 module.exports = function (plop)
 {
     //Verify if store module exists and it's contained under src/store path
@@ -253,7 +263,7 @@ module.exports = function (plop)
                 choices: [
                     { value: 'substate', name: 'Create substate' },
                     { value: 'persist', name: 'Persist a substate' },
-                    { value: 'epic', name: 'Create epic' },
+                    //{ value: 'epic', name: 'Create epic' },
                     //{ value: 'saga', name: 'Create saga' }
                 ]
             }, {
@@ -336,14 +346,14 @@ module.exports = function (plop)
                 type: 'input',
                 name: 'substateNoWsStaticMountOnComponent',
                 message: 'Do you want to mount the reducer automatically at the init of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
-            }, {
+            }, /*{
                 when: function(response) {
                     return response.operation === 'substate' && response.substateFunction === 'generic' && !response.substateNoWsStatic && response.substateNoWsStaticMountOnComponent;
                 },
                 type: 'input',
                 name: 'substateNoWsStaticUnmountOnComponent',
                 message: 'Do you want to unmount the reducer automatically at the destroy of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
-            }, {
+            },*/ {
                 when: function(response) {
                     return response.operation === 'persist';
                 },
@@ -423,69 +433,65 @@ module.exports = function (plop)
                                 templateFile: 'templates/substate/substate.slice.tpl'
                             });
 
-                            //Setting data to add actions in substate slice
-                            if (data.substateNoWsActions && data.substateNoWsActions.length)
-                            {
-                                var actionArray = data.substateNoWsActions.split(',');
-                                for (var i = 0; i < actionArray.length; ++i)
-                                {
-                                    actionArray[i] = actionArray[i].trim();
-
-                                    if (actionArray[i] === '')
-                                        actionArray.splice(i, 1);
-                                }
-                                data.actionArray = actionArray;
-
-                                plop.setPartial('stateType', pascalCase(data.substateNoWsName) + 'State');
-                            }
-
                             //Static generic substate reducer add logics
                             if (data.substateNoWsStatic)
                             {
-                                //Actions creation logics
+                                //Setting data to add actions in substate slice
                                 if (data.substateNoWsActions && data.substateNoWsActions.length)
                                 {
-                                    //Create generic substate selectors and dispatchers file
-                                    actions.push({
-                                        type: 'add',
-                                        path: storeDirectory + '{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers.ts',
-                                        templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
-                                    });
-
-                                    if (verifyIfStringInFileExists("export {};", getSrcFileAbsolutePath("store/index.ts")))
+                                    var actionArray = data.substateNoWsActions.split(',');
+                                    for (var i = 0; i < actionArray.length; ++i)
                                     {
-                                        //Remove default export {}; from index
-                                        actions.push({
-                                            type: 'modify',
-                                            pattern: /(export\s*\{\s*\};)/gi,
-                                            path: storeDirectory + 'index.ts',
-                                            template: ''
-                                        });
+                                        actionArray[i] = actionArray[i].trim();
+
+                                        if (actionArray[i] === '')
+                                            actionArray.splice(i, 1);
                                     }
+                                    data.actionArray = actionArray;
 
-                                    //Append actions class to store index
+                                    plop.setPartial('stateType', pascalCase(data.substateNoWsName) + 'State');
+                                }
+
+                                //Create generic substate selectors and dispatchers file
+                                actions.push({
+                                    type: 'add',
+                                    path: storeDirectory + '{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers.ts',
+                                    templateFile: 'templates/substate/substate.selectors-dispatchers.tpl'
+                                });
+
+                                if (matchRegex(/(export\s*\{\s*\}\s*;)/gi, getSrcFileAbsolutePath("store/index.ts")))
+                                {
+                                    //Remove default export {}; from index
                                     actions.push({
-                                        type: 'append',
+                                        type: 'modify',
+                                        pattern: /(export\s*\{\s*\}\s*;)/gi,
                                         path: storeDirectory + 'index.ts',
-                                        template: 'export { {{ pascalCase substateNoWsName}}Actions } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers\';'
-                                    });
-
-                                    //Add actions class import to store module
-                                    actions.push({
-                                        type: 'modify',
-                                        path: storeDirectory + 'store.module.ts',
-                                        pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                        template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
-                                    });
-
-                                    //Add actions class to store module provide
-                                    actions.push({
-                                        type: 'modify',
-                                        path: storeDirectory + 'store.module.ts',
-                                        pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
-                                        template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
+                                        template: ''
                                     });
                                 }
+
+                                //Append actions class to store index
+                                actions.push({
+                                    type: 'append',
+                                    path: storeDirectory + 'index.ts',
+                                    template: 'export { {{ pascalCase substateNoWsName}}Actions } from \'./{{ dashCase substateNoWsName }}/{{ dashCase substateNoWsName }}.selectors-dispatchers\';'
+                                });
+
+                                //Add actions class import to store module
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.module.ts',
+                                    pattern: /(\/\/Actions imports: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
+                                });
+
+                                //Add actions class to store module provide
+                                actions.push({
+                                    type: 'modify',
+                                    path: storeDirectory + 'store.module.ts',
+                                    pattern: /(\/\/Actions: PLEASE DON'T DELETE THIS PLACEHOLDER)/gi,
+                                    template: '{{ pascalCase substateNoWsName}}Actions,\n\t$1'
+                                });
 
                                 //Append generic substate reducer import to store
                                 actions.push({
@@ -685,12 +691,12 @@ module.exports = function (plop)
                                 template: '\n\t\tws: wsReducer,$1'
                             });
 
-                            if (verifyIfStringInFileExists("export {};", getSrcFileAbsolutePath("store/index.ts")))
+                            if (matchRegex(/(export\s*\{\s*\}\s*;)/gi, getSrcFileAbsolutePath("store/index.ts")))
                             {
                                 //Remove default export {}; from index
                                 actions.push({
                                     type: 'modify',
-                                    pattern: /(export\s*\{\s*\};)/gi,
+                                    pattern: /(export\s*\{\s*\}\s*;)/gi,
                                     path: storeDirectory + 'index.ts',
                                     template: ''
                                 });
