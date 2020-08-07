@@ -346,14 +346,14 @@ module.exports = function (plop)
                 type: 'input',
                 name: 'substateNoWsStaticMountOnComponent',
                 message: 'Do you want to mount the reducer automatically at the init of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
-            }, /*{
+            }, {
                 when: function(response) {
                     return response.operation === 'substate' && response.substateFunction === 'generic' && !response.substateNoWsStatic && response.substateNoWsStaticMountOnComponent;
                 },
                 type: 'input',
                 name: 'substateNoWsStaticUnmountOnComponent',
                 message: 'Do you want to unmount the reducer automatically at the destroy of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
-            },*/ {
+            }, {
                 when: function(response) {
                     return response.operation === 'persist';
                 },
@@ -573,26 +573,26 @@ module.exports = function (plop)
                                                 actions.push({
                                                     type: 'modify',
                                                     path,
-                                                    pattern: /(@Component\s*\(\s*\{(.|\n)*\}\s*\))(\s|\n)*(export\s)/gi,
-                                                    template: '$1\n@ReducerInjector([])\n$4'
+                                                    pattern: /(@Component\s*\(\s*\{(.|\s)+?(?=\})\}\s*\))/gi,
+                                                    template: '$1\n@ReducerInjector([{\n\tkey: \'{{ camelCase substateNoWsName }}\',\n\treducer: {{ camelCase substateNoWsName }}Reducer\n}])'
                                                 });
                                             }
+                                            else
+                                                actions.push({
+                                                    type: 'modify',
+                                                    path,
+                                                    pattern: /(@ReducerInjector\s*\(\s*\[(\s*\{(.|\s)+?(?=\})\}\s*,*)*)/,
+                                                    templateFile: 'templates/substate/substate.component-injection.tpl',
+                                                });
 
                                             //Append dynamic reducer import
-                                            actions.push({
-                                                type: 'modify',
-                                                path,
-                                                pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core\s*\'\s*;\s*\n)/,
-                                                template: '$1import { {{ camelCase substateNoWsName}}Reducer } from \'' + getStoreDirectory(false) + '{{ camelCase substateNoWsName}}/{{ camelCase substateNoWsName}}.slice\';\n'
-                                            });
-
-                                            //Append dynamic reducer into decorator
-                                            actions.push({
-                                                type: 'modify',
-                                                path,
-                                                pattern: /(@ReducerInjector\s*\(\s*\[(\s*\{(.|\n)*\}\s*,\s*)*)/gi,
-                                                templateFile: 'templates/substate/substate.component-injection.tpl'
-                                            });
+                                            if (path && !verifyIfStringInFileExists(camelCase(data.substateNoWsName) + "Reducer", path))
+                                                actions.push({
+                                                    type: 'modify',
+                                                    path,
+                                                    pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core\s*\'\s*;\s*)/,
+                                                    template: '$1import { {{ camelCase substateNoWsName}}Reducer } from \'' + getStoreDirectory(false) + '{{ camelCase substateNoWsName}}/{{ camelCase substateNoWsName}}.slice\';\n'
+                                                });
                                         }
                                         else
                                             console.log("File " + path + " not recognized as a component");
@@ -634,29 +634,28 @@ module.exports = function (plop)
                                                 }
 
                                                 //Append ReducerDeallocator decorator
-                                                if (verifyIfStringInFileExists("@ReducerInjector", path))
+                                                if (data.substateNoWsStaticUnmountOnComponent === data.substateNoWsStaticMountOnComponent)
                                                     actions.push({
                                                         type: 'modify',
                                                         path,
-                                                        pattern: /(@ReducerInjector\s*\(\s*\[(.|\n)*\]\s*\))/gi,
-                                                        template: '$1\n@ReducerDeallocator([])'
+                                                        pattern: /(@ReducerInjector\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
+                                                        template: '$1\n@ReducerDeallocator([\'{{ camelCase substateNoWsName }}\'])'
                                                     });
                                                 else
                                                     actions.push({
                                                         type: 'modify',
                                                         path,
-                                                        pattern: /(@Component\s*\(\s*\{(.|\n)*\}\s*\))/gi,
-                                                        template: '$1\n@ReducerDeallocator([])'
+                                                        pattern: /(@Component\s*\(\s*\{(.|\s)+?(?=\})\}\s*\))/gi,
+                                                        template: '$1\n@ReducerDeallocator([\'{{ camelCase substateNoWsName }}\'])'
                                                     });
                                             }
-
-                                            //Append dynamic reducer into decorator
-                                            /*actions.push({
-                                                type: 'modify',
-                                                path,
-                                                pattern: /(@ReducerDeallocator)/gi,
-                                                template: '$1{{ camelCase substateNoWsName }},'
-                                            });*/
+                                            else
+                                                actions.push({
+                                                    type: 'modify',
+                                                    path,
+                                                    pattern: /(@ReducerDeallocator\s*\(\s*\[(\s*\'.+?(?=\')\',*)*)/,
+                                                    template: '$1, \'{{ camelCase substateNoWsName }}\'',
+                                                });
                                         }
                                         else
                                             console.log("File " + path + " not recognized as a component");
