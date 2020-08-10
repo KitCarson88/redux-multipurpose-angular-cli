@@ -150,7 +150,7 @@ function matchRegex(regex, pathFile)
     var file = fs.readFileSync(pathFile).toString();
     const ret = file.match(regex);
 
-    console.log("Regex matched: ", ret);
+    //console.log("Regex matched: ", ret);
 
     return ret && ret.length > 0;
 }
@@ -263,7 +263,7 @@ module.exports = function (plop)
                 choices: [
                     { value: 'substate', name: 'Create substate' },
                     { value: 'persist', name: 'Persist a substate' },
-                    //{ value: 'epic', name: 'Create epic' },
+                    { value: 'epic', name: 'Create epic' },
                     //{ value: 'saga', name: 'Create saga' }
                 ]
             }, {
@@ -379,15 +379,15 @@ module.exports = function (plop)
                     return response.operation === 'epic';
                 },
                 type: 'input',
-                name: 'epicName',
-                message: 'What is the name of the epic method?'
+                name: 'epicOnTriggerAction',
+                message: 'What is the launch existent action to trigger?'
             }, {
                 when: function(response) {
                     return response.operation === 'epic';
                 },
                 type: 'input',
-                name: 'epicOnTriggerAction',
-                message: 'What is the launch existent action to trigger?'
+                name: 'epicName',
+                message: 'Give a name to the epic method:'
             }, {
                 when: function(response) {
                     return response.operation === 'epic';
@@ -1058,16 +1058,21 @@ module.exports = function (plop)
                                     skipIfExists: true
                                 });
 
-                                if (!verifyIfStringInFileExists(camelCase(data.epicOnTriggerAction), getSrcFileAbsolutePath(kebabCase(data.epicSubstate) + '.epics.ts')))
-                                {
+                                if (!getSrcFileAbsolutePath(kebabCase(data.epicSubstate) + '.epics.ts'))
+                                    actions.push({
+                                        type: 'modify',
+                                        path: storeDirectory + '{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics.ts',
+                                        pattern: /(\'redux-observable-es6-compat\'\s*;\s*)/gi,
+                                        template: '$1import {\n\t{{ camelCase epicOnTriggerAction }}\n} from \'./{{ dashCase epicSubstate }}.slice\';'
+                                    });
+                                else if (!verifyIfStringInFileExists(camelCase(data.epicOnTriggerAction), getSrcFileAbsolutePath(kebabCase(data.epicSubstate) + '.epics.ts')))
                                     //If the trigger action wasn't added yet, adding it to imports
                                     actions.push({
                                         type: 'modify',
                                         path: storeDirectory + '{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics.ts',
-                                        pattern: /(\/\/Actions imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                        template: '{{ camelCase epicOnTriggerAction }},\n\t$1'
+                                        pattern: new RegExp(/(\s*\}\s*from\s*\'\.\/)/gi.source + new RegExp("(" + kebabCase(data.epicSubstate) + ".slice)").source),
+                                        template: ',\n\t{{ camelCase epicOnTriggerAction }}$1$2'
                                     });
-                                }
 
                                 //Append new epic
                                 actions.push({
@@ -1089,21 +1094,27 @@ module.exports = function (plop)
                                         });
                                     }
                                     else
-                                    {
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
-                                            pattern: /(\/\/Epics imports: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
+                                            pattern: /(\nexport\s*default\s*function\s*rootEpic)/gi,
                                             template: 'import { {{ camelCase epicName }} } from \'./{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics\';\n$1'
                                         });
-                                    }
 
-                                    actions.push({
-                                        type: 'modify',
-                                        path: storeDirectory + 'epics.ts',
-                                        pattern: /(\/\/Epics: PLEASE DON'T DELETE OR MODIFY THIS PLACEHOLDER)/gi,
-                                        template: '{{ camelCase epicName }}(),\n\t\t$1'
-                                    });
+                                    if (matchRegex(/(return\s*combineEpics\s*\()\s*(\))/gi, getSrcFileAbsolutePath('store/epics.ts')))
+                                        actions.push({
+                                            type: 'modify',
+                                            path: storeDirectory + 'epics.ts',
+                                            pattern: /(return\s*combineEpics\s*\()\s*(\))/gi,
+                                            template: '$1\n\t\t{{ camelCase epicName }}()\n\t$2'
+                                        });
+                                    else
+                                        actions.push({
+                                            type: 'modify',
+                                            path: storeDirectory + 'epics.ts',
+                                            pattern: /(return\s*combineEpics\s*\()/gi,
+                                            template: '$1\n\t\t{{ camelCase epicName }}(),'
+                                        });
                                 }
                                 else
                                 {
