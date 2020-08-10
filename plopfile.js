@@ -392,7 +392,7 @@ module.exports = function (plop)
                 when: function(response) {
                     return response.operation === 'epic';
                 },
-                type: 'input',
+                type: 'confirm',
                 name: 'epicStatic',
                 message: 'Do you want to add the epic statically?\n(alternatively you can add it dynamically everywhere in your code)'
             }],
