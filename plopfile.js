@@ -596,7 +596,7 @@ module.exports = function (plop)
                                                     type: 'modify',
                                                     path,
                                                     pattern: /(@ReducerInjector\s*\(\s*\[(\s*\{(.|\s)+?(?=\})\}\s*,*)*)/,
-                                                    templateFile: 'templates/substate/substate.component-injection.tpl',
+                                                    templateFile: 'templates/substate/substate.reducer-component-injection.tpl',
                                                 });
 
                                             //Append dynamic reducer import
@@ -1168,7 +1168,7 @@ module.exports = function (plop)
                                                     }
 
                                                     //Append EpicInjector decorator
-                                                    var template = '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}\n}])';
+                                                    var template = '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}()\n}])';
                                                     if (verifyIfStringInFileExists("@ReducerDeallocator", path))
                                                         actions.push({
                                                             type: 'modify',
