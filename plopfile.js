@@ -348,7 +348,7 @@ module.exports = function (plop)
                 message: 'Do you want to mount the reducer automatically at the init of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
             }, {
                 when: function(response) {
-                    return response.operation === 'substate' && response.substateFunction === 'generic' && !response.substateNoWsStatic && response.substateNoWsStaticMountOnComponent;
+                    return response.operation === 'substate' && response.substateFunction === 'generic' && !response.substateNoWsStatic && response.substateNoWsStaticMountOnComponent && response.substateNoWsStaticMountOnComponent.length;
                 },
                 type: 'input',
                 name: 'substateNoWsStaticUnmountOnComponent',
@@ -404,7 +404,7 @@ module.exports = function (plop)
                 message: 'Do you want to mount the epic automatically at the init of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
             }, {
                 when: function(response) {
-                    return response.operation === 'substate' && !response.epicStatic && response.epicNoStaticMountOnComponent;
+                    return response.operation === 'epic' && !response.epicStatic && response.epicNoStaticMountOnComponent && response.epicNoStaticMountOnComponent.length;
                 },
                 type: 'input',
                 name: 'epicNoStaticUnmountOnComponent',
@@ -434,6 +434,22 @@ module.exports = function (plop)
                                     data.substateInitalValue = 'null';
                             }
 
+                            //Setting data to add actions in substate slice
+                            if (data.substateNoWsActions && data.substateNoWsActions.length)
+                            {
+                                var actionArray = data.substateNoWsActions.split(',');
+                                for (var i = 0; i < actionArray.length; ++i)
+                                {
+                                    actionArray[i] = actionArray[i].trim();
+
+                                    if (actionArray[i] === '')
+                                        actionArray.splice(i, 1);
+                                }
+                                data.actionArray = actionArray;
+
+                                plop.setPartial('stateType', pascalCase(data.substateNoWsName) + 'State');
+                            }
+
                             //Create generic substate model
                             actions.push({
                                 type: 'add',
@@ -450,22 +466,6 @@ module.exports = function (plop)
                             //Static generic substate reducer add logics
                             if (data.substateNoWsStatic)
                             {
-                                //Setting data to add actions in substate slice
-                                if (data.substateNoWsActions && data.substateNoWsActions.length)
-                                {
-                                    var actionArray = data.substateNoWsActions.split(',');
-                                    for (var i = 0; i < actionArray.length; ++i)
-                                    {
-                                        actionArray[i] = actionArray[i].trim();
-
-                                        if (actionArray[i] === '')
-                                            actionArray.splice(i, 1);
-                                    }
-                                    data.actionArray = actionArray;
-
-                                    plop.setPartial('stateType', pascalCase(data.substateNoWsName) + 'State');
-                                }
-
                                 //Create generic substate selectors and dispatchers file
                                 actions.push({
                                     type: 'add',
@@ -648,19 +648,20 @@ module.exports = function (plop)
                                                 }
 
                                                 //Append ReducerDeallocator decorator
-                                                if (data.substateNoWsStaticUnmountOnComponent === data.substateNoWsStaticMountOnComponent)
+                                                var template = '$1\n@ReducerDeallocator([\'{{ camelCase substateNoWsName }}\'])';
+                                                if (data.substateNoWsStaticUnmountOnComponent === data.substateNoWsStaticMountOnComponent || verifyIfStringInFileExists("@ReducerInjector", path))
                                                     actions.push({
                                                         type: 'modify',
                                                         path,
                                                         pattern: /(@ReducerInjector\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
-                                                        template: '$1\n@ReducerDeallocator([\'{{ camelCase substateNoWsName }}\'])'
+                                                        template 
                                                     });
                                                 else
                                                     actions.push({
                                                         type: 'modify',
                                                         path,
                                                         pattern: /(@Component\s*\(\s*\{(.|\s)+?(?=\})\}\s*\))/gi,
-                                                        template: '$1\n@ReducerDeallocator([\'{{ camelCase substateNoWsName }}\'])'
+                                                        template
                                                     });
                                             }
                                             else
@@ -1167,26 +1168,27 @@ module.exports = function (plop)
                                                     }
 
                                                     //Append EpicInjector decorator
+                                                    var template = '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}\n}])';
                                                     if (verifyIfStringInFileExists("@ReducerDeallocator", path))
                                                         actions.push({
                                                             type: 'modify',
                                                             path,
                                                             pattern: /(@ReducerDeallocator\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
-                                                            template: '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}\n}])'
+                                                            template
                                                         });
                                                     else if (verifyIfStringInFileExists("@ReducerInjector", path))
                                                         actions.push({
                                                             type: 'modify',
                                                             path,
                                                             pattern: /(@ReducerInjector\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
-                                                            template: '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}\n}])'
+                                                            template
                                                         });
                                                     else
                                                         actions.push({
                                                             type: 'modify',
                                                             path,
                                                             pattern: /(@Component\s*\(\s*\{(.|\s)+?(?=\})\}\s*\))/gi,
-                                                            template: '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}\n}])'
+                                                            template
                                                         });
                                                 }
                                                 else
@@ -1202,7 +1204,7 @@ module.exports = function (plop)
                                                     actions.push({
                                                         type: 'modify',
                                                         path,
-                                                        pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core\s*\'\s*;\s*)/,
+                                                        pattern: /(\s*\}\s*from\s*\'@redux-multipurpose\/core\'\s*;\s*)/,
                                                         template: '$1import { {{ camelCase epicName}} } from \'' + getStoreDirectory(false) + '{{ dashCase epicSubstate}}/{{ dashCase epicSubstate}}.epics\';\n'
                                                     });
                                             }
@@ -1212,17 +1214,17 @@ module.exports = function (plop)
                                     }
 
                                     //Dynamic on component unmount
-                                    /*if (data.substateNoWsStaticUnmountOnComponent && data.substateNoWsStaticUnmountOnComponent.length)
+                                    if (data.epicNoStaticUnmountOnComponent && data.epicNoStaticUnmountOnComponent.length)
                                     {
-                                        if (!data.substateNoWsStaticUnmountOnComponent.endsWith('.ts'))
-                                            data.substateNoWsStaticUnmountOnComponent += '.ts';
-                                        var path = getSrcFileAbsolutePath(data.substateNoWsStaticUnmountOnComponent);
+                                        if (!data.epicNoStaticUnmountOnComponent.endsWith('.ts'))
+                                            data.epicNoStaticUnmountOnComponent += '.ts';
+                                        var path = getSrcFileAbsolutePath(data.epicNoStaticUnmountOnComponent);
 
                                         if (path)
                                         {
                                             if (verifyIfStringInFileExists("@Component", path))
                                             {
-                                                if (!verifyIfStringInFileExists("@ReducerDeallocator", path))
+                                                if (!verifyIfStringInFileExists("@EpicDeallocator", path))
                                                 {
                                                     if (!verifyIfStringInFileExists("@redux-multipurpose/core", path))
                                                     {
@@ -1231,7 +1233,7 @@ module.exports = function (plop)
                                                             type: 'modify',
                                                             path,
                                                             pattern: /('@angular\/core';*)/,
-                                                            template: '$1\n\nimport { ReducerDeallocator } from \'@redux-multipurpose/core\';\n'
+                                                            template: '$1\n\nimport { EpicDeallocator } from \'@redux-multipurpose/core\';\n'
                                                         });
                                                     }
                                                     else
@@ -1241,38 +1243,53 @@ module.exports = function (plop)
                                                             type: 'modify',
                                                             path,
                                                             pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core)/,
-                                                            template: ', ReducerDeallocator$1'
+                                                            template: ', EpicDeallocator$1'
                                                         });
                                                     }
 
-                                                    //Append ReducerDeallocator decorator
-                                                    if (data.substateNoWsStaticUnmountOnComponent === data.substateNoWsStaticMountOnComponent)
+                                                    //Append EpicDeallocator decorator
+                                                    var template = '$1\n@EpicDeallocator([\'{{ camelCase epicName }}\'])';
+                                                    if (data.epicNoStaticUnmountOnComponent === data.epicNoStaticMountOnComponent || verifyIfStringInFileExists("@EpicInjector", path))
+                                                        actions.push({
+                                                            type: 'modify',
+                                                            path,
+                                                            pattern: /(@EpicInjector\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
+                                                            template
+                                                        });
+                                                    else if (verifyIfStringInFileExists("@ReducerDeallocator", path))
+                                                        actions.push({
+                                                            type: 'modify',
+                                                            path,
+                                                            pattern: /(@ReducerDeallocator\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
+                                                            template
+                                                        });
+                                                    else if (verifyIfStringInFileExists("@ReducerInjector", path))
                                                         actions.push({
                                                             type: 'modify',
                                                             path,
                                                             pattern: /(@ReducerInjector\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
-                                                            template: '$1\n@ReducerDeallocator([\'{{ camelCase substateNoWsName }}\'])'
+                                                            template
                                                         });
                                                     else
                                                         actions.push({
                                                             type: 'modify',
                                                             path,
                                                             pattern: /(@Component\s*\(\s*\{(.|\s)+?(?=\})\}\s*\))/gi,
-                                                            template: '$1\n@ReducerDeallocator([\'{{ camelCase substateNoWsName }}\'])'
+                                                            template
                                                         });
                                                 }
                                                 else
                                                     actions.push({
                                                         type: 'modify',
                                                         path,
-                                                        pattern: /(@ReducerDeallocator\s*\(\s*\[(\s*\'.+?(?=\')\',*)*)/,
-                                                        template: '$1, \'{{ camelCase substateNoWsName }}\'',
+                                                        pattern: /(@EpicDeallocator\s*\(\s*\[(\s*\'.+?(?=\')\',*)*)/,
+                                                        template: '$1, \'{{ camelCase epicName }}\'',
                                                     });
                                             }
                                             else
                                                 console.log("File " + path + " not recognized as a component");
                                         }
-                                    }*/
+                                    }
                                 }
                             }
                             else
