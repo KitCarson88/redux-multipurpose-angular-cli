@@ -395,7 +395,21 @@ module.exports = function (plop)
                 type: 'confirm',
                 name: 'epicStatic',
                 message: 'Do you want to add the epic statically?\n(alternatively you can add it dynamically everywhere in your code)'
-            }],
+            }, {
+                when: function(response) {
+                    return response.operation === 'epic' && !response.epicStatic;
+                },
+                type: 'input',
+                name: 'epicNoStaticMountOnComponent',
+                message: 'Do you want to mount the epic automatically at the init of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
+            }, {
+                when: function(response) {
+                    return response.operation === 'substate' && !response.epicStatic && response.epicNoStaticMountOnComponent;
+                },
+                type: 'input',
+                name: 'epicNoStaticUnmountOnComponent',
+                message: 'Do you want to unmount the epic automatically at the destroy of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
+            }, ],
             actions: function(data) {
                 var actions = [];
                 var storeDirectory = getStoreDirectory(true);
@@ -591,7 +605,7 @@ module.exports = function (plop)
                                                     type: 'modify',
                                                     path,
                                                     pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core\s*\'\s*;\s*)/,
-                                                    template: '$1import { {{ camelCase substateNoWsName}}Reducer } from \'' + getStoreDirectory(false) + '{{ camelCase substateNoWsName}}/{{ camelCase substateNoWsName}}.slice\';\n'
+                                                    template: '$1import { {{ camelCase substateNoWsName}}Reducer } from \'' + getStoreDirectory(false) + '{{ dashCase substateNoWsName}}/{{ dashCase substateNoWsName}}.slice\';\n'
                                                 });
                                         }
                                         else
@@ -1043,7 +1057,7 @@ module.exports = function (plop)
                 }
                 else if (data.operation === 'epic')
                 {
-                    if (data.epicSubstate && data.epicSubstate.length && verifyIfWholeWordInFileExists(camelCase(data.epicSubstate), getSrcFileAbsolutePath("store/store.reducer.ts")))
+                    if (data.epicSubstate && data.epicSubstate.length && getSrcFileRelativePath(kebabCase(data.epicSubstate)))
                     {
                         if (data.epicName && data.epicName.length)
                         {
@@ -1118,7 +1132,147 @@ module.exports = function (plop)
                                 }
                                 else
                                 {
+                                    //Dynamic on component mount
+                                    if (data.epicNoStaticMountOnComponent && data.epicNoStaticMountOnComponent.length)
+                                    {
+                                        if (!data.epicNoStaticMountOnComponent.endsWith('.ts'))
+                                            data.epicNoStaticMountOnComponent += '.ts';
+                                        var path = getSrcFileAbsolutePath(data.epicNoStaticMountOnComponent);
 
+                                        if (path)
+                                        {
+                                            if (verifyIfStringInFileExists("@Component", path))
+                                            {
+                                                if (!verifyIfStringInFileExists("@EpicInjector", path))
+                                                {
+                                                    if (!verifyIfStringInFileExists("@redux-multipurpose/core", path))
+                                                    {
+                                                        //Append ReducerInjector decorator import
+                                                        actions.push({
+                                                            type: 'modify',
+                                                            path,
+                                                            pattern: /('@angular\/core';*)/,
+                                                            template: '$1\n\nimport { EpicInjector } from \'@redux-multipurpose/core\';\n'
+                                                        });
+                                                    }
+                                                    else
+                                                    {
+                                                        //Append EpicInjector decorator to core imports
+                                                        actions.push({
+                                                            type: 'modify',
+                                                            path,
+                                                            pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core)/,
+                                                            template: ', EpicInjector$1'
+                                                        });
+                                                    }
+
+                                                    //Append EpicInjector decorator
+                                                    if (verifyIfStringInFileExists("@ReducerDeallocator", path))
+                                                        actions.push({
+                                                            type: 'modify',
+                                                            path,
+                                                            pattern: /(@ReducerDeallocator\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
+                                                            template: '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}\n}])'
+                                                        });
+                                                    else if (verifyIfStringInFileExists("@ReducerInjector", path))
+                                                        actions.push({
+                                                            type: 'modify',
+                                                            path,
+                                                            pattern: /(@ReducerInjector\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
+                                                            template: '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}\n}])'
+                                                        });
+                                                    else
+                                                        actions.push({
+                                                            type: 'modify',
+                                                            path,
+                                                            pattern: /(@Component\s*\(\s*\{(.|\s)+?(?=\})\}\s*\))/gi,
+                                                            template: '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}\n}])'
+                                                        });
+                                                }
+                                                else
+                                                    actions.push({
+                                                        type: 'modify',
+                                                        path,
+                                                        pattern: /(@EpicInjector\s*\(\s*\[(\s*\{(.|\s)+?(?=\})\}\s*,*)*)/,
+                                                        templateFile: 'templates/substate/substate.epic-component-injection.tpl',
+                                                    });
+
+                                                //Append dynamic epic import
+                                                if (path && !verifyIfStringInFileExists(camelCase(data.epicName), path))
+                                                    actions.push({
+                                                        type: 'modify',
+                                                        path,
+                                                        pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core\s*\'\s*;\s*)/,
+                                                        template: '$1import { {{ camelCase epicName}} } from \'' + getStoreDirectory(false) + '{{ dashCase epicSubstate}}/{{ dashCase epicSubstate}}.epics\';\n'
+                                                    });
+                                            }
+                                            else
+                                                console.log("File " + path + " not recognized as a component");
+                                        }
+                                    }
+
+                                    //Dynamic on component unmount
+                                    /*if (data.substateNoWsStaticUnmountOnComponent && data.substateNoWsStaticUnmountOnComponent.length)
+                                    {
+                                        if (!data.substateNoWsStaticUnmountOnComponent.endsWith('.ts'))
+                                            data.substateNoWsStaticUnmountOnComponent += '.ts';
+                                        var path = getSrcFileAbsolutePath(data.substateNoWsStaticUnmountOnComponent);
+
+                                        if (path)
+                                        {
+                                            if (verifyIfStringInFileExists("@Component", path))
+                                            {
+                                                if (!verifyIfStringInFileExists("@ReducerDeallocator", path))
+                                                {
+                                                    if (!verifyIfStringInFileExists("@redux-multipurpose/core", path))
+                                                    {
+                                                        //Append ReducerDeallocator decorator import
+                                                        actions.push({
+                                                            type: 'modify',
+                                                            path,
+                                                            pattern: /('@angular\/core';*)/,
+                                                            template: '$1\n\nimport { ReducerDeallocator } from \'@redux-multipurpose/core\';\n'
+                                                        });
+                                                    }
+                                                    else
+                                                    {
+                                                        //Append ReducerDeallocator decorator to core imports
+                                                        actions.push({
+                                                            type: 'modify',
+                                                            path,
+                                                            pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core)/,
+                                                            template: ', ReducerDeallocator$1'
+                                                        });
+                                                    }
+
+                                                    //Append ReducerDeallocator decorator
+                                                    if (data.substateNoWsStaticUnmountOnComponent === data.substateNoWsStaticMountOnComponent)
+                                                        actions.push({
+                                                            type: 'modify',
+                                                            path,
+                                                            pattern: /(@ReducerInjector\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
+                                                            template: '$1\n@ReducerDeallocator([\'{{ camelCase substateNoWsName }}\'])'
+                                                        });
+                                                    else
+                                                        actions.push({
+                                                            type: 'modify',
+                                                            path,
+                                                            pattern: /(@Component\s*\(\s*\{(.|\s)+?(?=\})\}\s*\))/gi,
+                                                            template: '$1\n@ReducerDeallocator([\'{{ camelCase substateNoWsName }}\'])'
+                                                        });
+                                                }
+                                                else
+                                                    actions.push({
+                                                        type: 'modify',
+                                                        path,
+                                                        pattern: /(@ReducerDeallocator\s*\(\s*\[(\s*\'.+?(?=\')\',*)*)/,
+                                                        template: '$1, \'{{ camelCase substateNoWsName }}\'',
+                                                    });
+                                            }
+                                            else
+                                                console.log("File " + path + " not recognized as a component");
+                                        }
+                                    }*/
                                 }
                             }
                             else
