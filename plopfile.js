@@ -1116,19 +1116,19 @@ module.exports = function (plop)
                                             template: 'import { {{ camelCase epicName }} } from \'./{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics\';\n$1'
                                         });
 
-                                    if (matchRegex(/(return\s*combineEpics\s*\()\s*(\))/gi, getSrcFileAbsolutePath('store/epics.ts')))
+                                    if (matchRegex(/(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*\[\s*\])/gi, getSrcFileAbsolutePath('store/epics.ts')))
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
-                                            pattern: /(return\s*combineEpics\s*\()\s*(\))/gi,
-                                            template: '$1\n\t\t{{ camelCase epicName }}()\n\t$2'
+                                            pattern: /(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*\[)\s*(\])/gi,
+                                            template: '$1\n\t\t{{ camelCase epicName }}\n\t$2'
                                         });
                                     else
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
-                                            pattern: /(return\s*combineEpics\s*\()/gi,
-                                            template: '$1\n\t\t{{ camelCase epicName }}(),'
+                                            pattern: /(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*\[)/gi,
+                                            template: '$1\n\t\t{{ camelCase epicName }},'
                                         });
                                 }
                                 else
@@ -1168,7 +1168,7 @@ module.exports = function (plop)
                                                     }
 
                                                     //Append EpicInjector decorator
-                                                    var template = '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}()\n}])';
+                                                    var template = '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}\n}])';
                                                     if (verifyIfStringInFileExists("@ReducerDeallocator", path))
                                                         actions.push({
                                                             type: 'modify',

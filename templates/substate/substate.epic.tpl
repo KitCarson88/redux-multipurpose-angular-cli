@@ -1,5 +1,3 @@
 
-export function {{ camelCase epicName }}(): Epic<any, any, any>
-{
-    return (action$, _) => action$.pipe(ofType({{ camelCase epicOnTriggerAction }}));
-}
+export const {{ camelCase epicName }}: Epic<any, any, any> = 
+    (action$, _) => action$.pipe(ofType({{ camelCase epicOnTriggerAction }}));
