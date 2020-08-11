@@ -41,7 +41,7 @@ export class StoreModule
       reducers: rootReducer({{#if enablePersistence}}storage{{/if}}),
       devTools: true,
       middlewares{{#if enableEpics}},
-      epics: rootEpic{{/if}}{{#if enableSagas}},
+      epics: rootEpic(){{/if}}{{#if enableSagas}},
       sagas: rootSaga{{/if}}{{#if enablePersistence}},
       enablePersistence: true{{/if}}{{#if routerKey}},
       router: configureRouterReducer('{{routerKey}}', this.router){{/if}}{{#if enableLogger}},
