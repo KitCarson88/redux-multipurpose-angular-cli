@@ -388,7 +388,7 @@ module.exports = function (plop)
                 type: 'input',
                 name: 'epicName',
                 message: 'Give a name to the epic method:'
-            }, {
+            }/*, {
                 when: function(response) {
                     return response.operation === 'epic';
                 },
@@ -409,7 +409,7 @@ module.exports = function (plop)
                 type: 'input',
                 name: 'epicNoStaticUnmountOnComponent',
                 message: 'Do you want to unmount the epic automatically at the destroy of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
-            }, ],
+            }*/],
             actions: function(data) {
                 var actions = [];
                 var storeDirectory = getStoreDirectory(true);
@@ -1096,8 +1096,8 @@ module.exports = function (plop)
                                     templateFile: 'templates/substate/substate.epic.tpl',
                                 });
 
-                                if (data.epicStatic)
-                                {
+                                //if (data.epicStatic)
+                                //{
                                     if (verifyIfStringInFileExists(kebabCase(data.epicSubstate) + '.epics', getSrcFileAbsolutePath('store/epics.ts')))
                                     {
                                         const regex = new RegExp(/(\s*\}\s*from\s*\'\.\/\s*)/gi.source + new RegExp('(' + kebabCase(data.epicSubstate) + ')', 'gi').source);
@@ -1116,21 +1116,21 @@ module.exports = function (plop)
                                             template: 'import { {{ camelCase epicName }} } from \'./{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics\';\n\n$1'
                                         });
 
-                                    if (matchRegex(/(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*\[\s*\])/gi, getSrcFileAbsolutePath('store/epics.ts')))
+                                    if (matchRegex(/(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*combineEpics\s*\(\s*\))/gi, getSrcFileAbsolutePath('store/epics.ts')))
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
-                                            pattern: /(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*\[)\s*(\])/gi,
+                                            pattern: /(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*combineEpics\s*\()\s*(\))/gi,
                                             template: '$1\n\t\t{{ camelCase epicName }}\n\t$2'
                                         });
                                     else
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
-                                            pattern: /(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*\[)/gi,
+                                            pattern: /(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*combineEpics\s*\()/gi,
                                             template: '$1\n\t\t{{ camelCase epicName }},'
                                         });
-                                }
+                                /*}
                                 else
                                 {
                                     //Dynamic on component mount
@@ -1290,7 +1290,7 @@ module.exports = function (plop)
                                                 console.log("File " + path + " not recognized as a component");
                                         }
                                     }
-                                }
+                                }*/
                             }
                             else
                                 console.log("Cannot find the typed action to trigger");
