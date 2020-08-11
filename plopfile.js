@@ -1112,8 +1112,8 @@ module.exports = function (plop)
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
-                                            pattern: /(\nexport\s*default\s*function\s*rootEpic)/gi,
-                                            template: 'import { {{ camelCase epicName }} } from \'./{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics\';\n$1'
+                                            pattern: /(export\s*default\s*function\s*rootEpic)/gi,
+                                            template: 'import { {{ camelCase epicName }} } from \'./{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics\';\n\n$1'
                                         });
 
                                     if (matchRegex(/(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*\[\s*\])/gi, getSrcFileAbsolutePath('store/epics.ts')))
