@@ -178,12 +178,20 @@ module.exports = function (plop)
                     { value: 'epics', name: 'Epics skeleton (redux-observables)' },
                     { value: 'sagas', name: 'Sagas skeleton (redux-saga)' },
                     { value: 'persistence', name: 'Persistence (redux-persist)' },
+                    { value: 'responsiveness', name: 'Responsiveness (redux-responsive)' },
                     { value: 'logger', name: 'Logger (redux-logger)' }
                 ]
             }, {
                 type: 'input',
                 name: 'routerKey',
                 message: 'Do you want to enable angular router reducer? Leave it blank if you don\'t need it; otherwise digit a key name to the reducer (e.g. router)'
+            }, {
+                type: 'input',
+                name: 'breakpoints',
+                when: function(response) {
+                    return response.configurations.indexOf('responsiveness') >= 0;
+                },
+                message: 'Do you want to customize responsiveness breakpoints? (Insert them separated by commas, or leave blank to use defaults)\ndefault are 480, 768, 992, 1200: '
             }],
             actions: function(data) {
                 var actions = [];
@@ -194,6 +202,8 @@ module.exports = function (plop)
                     data.enableSagas = true;
                 if (data.configurations.indexOf('persistence') >= 0)
                     data.enablePersistence = true;
+                if (data.configurations.indexOf('responsiveness') >= 0)
+                    data.enableResponsiveness = true;
                 if (data.configurations.indexOf('logger') >= 0)
                     data.enableLogger = true;
     
@@ -229,6 +239,36 @@ module.exports = function (plop)
                         templateFile: 'templates/sagas.tpl',
                         skipIfExists: true
                     });
+
+                if (data.breakpoints)
+                {
+                    var breaks = data.breakpoints.split(',');
+                    for (var i = 0; i < breaks.length; ++i)
+                    {
+                        breaks[i] = breaks[i].trim();
+
+                        if (breaks[i] === '')
+                            breaks.splice(i, 1);
+                    }
+
+                    if (breaks.length >= 5)
+                    {
+                        data.breakpoint1 = breaks[0];
+                        data.breakpoint2 = breaks[1];
+                        data.breakpoint3 = breaks[2];
+                        data.breakpoint4 = breaks[3];
+                        data.breakpoint5 = breaks[4];
+    
+                        actions.push({
+                            type: 'modify',
+                            path: '{{cwd}}/' + data.storeDir + '/store/store.module.ts',
+                            pattern: /(enableResponsiveness\s*:\s*)(true)/,
+                            templateFile: 'templates/store.responsiveness-configuration.tpl' 
+                        });
+                    }
+                    else
+                        console.log("Please provide at least five breakpoints to customize responsiveness");
+                }
 
                 let appModuleFile = getSrcFileAbsolutePath('app.module');
                 if (!verifyInAppModuleImport(appModuleFile))
@@ -310,7 +350,7 @@ module.exports = function (plop)
                 },
                 type: 'input',
                 name: 'substateNoWsActions',
-                message: 'Do you want to add some actions?\n(Please insert them separated by comma; or leave it blank to skip this step)'
+                message: 'Do you want to add some actions?\n(Please insert them separated by commas; or leave it blank to skip this step)'
             }, {
                 when: function(response) {
                     return response.operation === 'substate' && response.substateFunction === 'ws';

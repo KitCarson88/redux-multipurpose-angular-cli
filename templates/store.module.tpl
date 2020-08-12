@@ -43,7 +43,8 @@ export class StoreModule
       middlewares{{#if enableEpics}},
       epics: rootEpic(){{/if}}{{#if enableSagas}},
       sagas: rootSaga{{/if}}{{#if enablePersistence}},
-      enablePersistence: true{{/if}}{{#if routerKey}},
+      enablePersistence: true{{/if}}{{#if enableResponsiveness}},
+      enableResponsiveness: true{{/if}}{{#if routerKey}},
       router: configureRouterReducer('{{routerKey}}', this.router){{/if}}{{#if enableLogger}},
       logLevel: 'log'{{/if}}
     });
