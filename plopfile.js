@@ -428,28 +428,14 @@ module.exports = function (plop)
                 type: 'input',
                 name: 'epicName',
                 message: 'Give a name to the epic method:'
-            }/*, {
+            }, {
                 when: function(response) {
                     return response.operation === 'epic';
                 },
                 type: 'confirm',
                 name: 'epicStatic',
                 message: 'Do you want to add the epic statically?\n(alternatively you can add it dynamically everywhere in your code)'
-            }, {
-                when: function(response) {
-                    return response.operation === 'epic' && !response.epicStatic;
-                },
-                type: 'input',
-                name: 'epicNoStaticMountOnComponent',
-                message: 'Do you want to mount the epic automatically at the init of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
-            }, {
-                when: function(response) {
-                    return response.operation === 'epic' && !response.epicStatic && response.epicNoStaticMountOnComponent && response.epicNoStaticMountOnComponent.length;
-                },
-                type: 'input',
-                name: 'epicNoStaticUnmountOnComponent',
-                message: 'Do you want to unmount the epic automatically at the destroy of a component or a page?\n(type the name of the ts file that contains the page or component, otherwise leave it blank)'
-            }*/],
+            }],
             actions: function(data) {
                 var actions = [];
                 var storeDirectory = getStoreDirectory(true);
@@ -1136,8 +1122,8 @@ module.exports = function (plop)
                                     templateFile: 'templates/substate/substate.epic.tpl',
                                 });
 
-                                //if (data.epicStatic)
-                                //{
+                                if (data.epicStatic)
+                                {
                                     if (verifyIfStringInFileExists(kebabCase(data.epicSubstate) + '.epics', getSrcFileAbsolutePath('store/epics.ts')))
                                     {
                                         const regex = new RegExp(/(\s*\}\s*from\s*\'\.\/\s*)/gi.source + new RegExp('(' + kebabCase(data.epicSubstate) + ')', 'gi').source);
@@ -1152,185 +1138,25 @@ module.exports = function (plop)
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
-                                            pattern: /(export\s*default\s*function\s*rootEpic)/gi,
+                                            pattern: /(var\s*staticEpics\s*=\s*\[)/gi,
                                             template: 'import { {{ camelCase epicName }} } from \'./{{ dashCase epicSubstate }}/{{ dashCase epicSubstate }}.epics\';\n\n$1'
                                         });
 
-                                    if (matchRegex(/(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*combineEpics\s*\(\s*\))/gi, getSrcFileAbsolutePath('store/epics.ts')))
+                                    if (matchRegex(/(var\s*staticEpics\s*=\s*\[\s*\])/gi, getSrcFileAbsolutePath('store/epics.ts')))
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
-                                            pattern: /(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*combineEpics\s*\()\s*(\))/gi,
-                                            template: '$1\n\t\t{{ camelCase epicName }}\n\t$2'
+                                            pattern: /(var\s*staticEpics\s*=\s*\[)\s*(\])/gi,
+                                            template: '$1\n\t{{ camelCase epicName }}\n$2'
                                         });
                                     else
                                         actions.push({
                                             type: 'modify',
                                             path: storeDirectory + 'epics.ts',
-                                            pattern: /(export\s*default\s*function\s*rootEpic\s*\(\)\s*\{\s*return\s*combineEpics\s*\()/gi,
-                                            template: '$1\n\t\t{{ camelCase epicName }},'
+                                            pattern: /(var\s*staticEpics\s*=\s*\[)/gi,
+                                            template: '$1\n\t{{ camelCase epicName }},'
                                         });
-                                /*}
-                                else
-                                {
-                                    //Dynamic on component mount
-                                    if (data.epicNoStaticMountOnComponent && data.epicNoStaticMountOnComponent.length)
-                                    {
-                                        if (!data.epicNoStaticMountOnComponent.endsWith('.ts'))
-                                            data.epicNoStaticMountOnComponent += '.ts';
-                                        var path = getSrcFileAbsolutePath(data.epicNoStaticMountOnComponent);
-
-                                        if (path)
-                                        {
-                                            if (verifyIfStringInFileExists("@Component", path))
-                                            {
-                                                if (!verifyIfStringInFileExists("@EpicInjector", path))
-                                                {
-                                                    if (!verifyIfStringInFileExists("@redux-multipurpose/core", path))
-                                                    {
-                                                        //Append ReducerInjector decorator import
-                                                        actions.push({
-                                                            type: 'modify',
-                                                            path,
-                                                            pattern: /('@angular\/core';*)/,
-                                                            template: '$1\n\nimport { EpicInjector } from \'@redux-multipurpose/core\';\n'
-                                                        });
-                                                    }
-                                                    else
-                                                    {
-                                                        //Append EpicInjector decorator to core imports
-                                                        actions.push({
-                                                            type: 'modify',
-                                                            path,
-                                                            pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core)/,
-                                                            template: ', EpicInjector$1'
-                                                        });
-                                                    }
-
-                                                    //Append EpicInjector decorator
-                                                    var template = '$1\n@EpicInjector([{\n\tkey: \'{{ camelCase epicName }}\',\n\tepic: {{ camelCase epicName }}\n}])';
-                                                    if (verifyIfStringInFileExists("@ReducerDeallocator", path))
-                                                        actions.push({
-                                                            type: 'modify',
-                                                            path,
-                                                            pattern: /(@ReducerDeallocator\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
-                                                            template
-                                                        });
-                                                    else if (verifyIfStringInFileExists("@ReducerInjector", path))
-                                                        actions.push({
-                                                            type: 'modify',
-                                                            path,
-                                                            pattern: /(@ReducerInjector\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
-                                                            template
-                                                        });
-                                                    else
-                                                        actions.push({
-                                                            type: 'modify',
-                                                            path,
-                                                            pattern: /(@Component\s*\(\s*\{(.|\s)+?(?=\})\}\s*\))/gi,
-                                                            template
-                                                        });
-                                                }
-                                                else
-                                                    actions.push({
-                                                        type: 'modify',
-                                                        path,
-                                                        pattern: /(@EpicInjector\s*\(\s*\[(\s*\{(.|\s)+?(?=\})\}\s*,*)*)/,
-                                                        templateFile: 'templates/substate/substate.epic-component-injection.tpl',
-                                                    });
-
-                                                //Append dynamic epic import
-                                                if (path && !verifyIfStringInFileExists(camelCase(data.epicName), path))
-                                                    actions.push({
-                                                        type: 'modify',
-                                                        path,
-                                                        pattern: /(\s*\}\s*from\s*\'@redux-multipurpose\/core\'\s*;\s*)/,
-                                                        template: '$1import { {{ camelCase epicName}} } from \'' + getStoreDirectory(false) + '{{ dashCase epicSubstate}}/{{ dashCase epicSubstate}}.epics\';\n'
-                                                    });
-                                            }
-                                            else
-                                                console.log("File " + path + " not recognized as a component");
-                                        }
-                                    }
-
-                                    //Dynamic on component unmount
-                                    if (data.epicNoStaticUnmountOnComponent && data.epicNoStaticUnmountOnComponent.length)
-                                    {
-                                        if (!data.epicNoStaticUnmountOnComponent.endsWith('.ts'))
-                                            data.epicNoStaticUnmountOnComponent += '.ts';
-                                        var path = getSrcFileAbsolutePath(data.epicNoStaticUnmountOnComponent);
-
-                                        if (path)
-                                        {
-                                            if (verifyIfStringInFileExists("@Component", path))
-                                            {
-                                                if (!verifyIfStringInFileExists("@EpicDeallocator", path))
-                                                {
-                                                    if (!verifyIfStringInFileExists("@redux-multipurpose/core", path))
-                                                    {
-                                                        //Append ReducerDeallocator decorator import
-                                                        actions.push({
-                                                            type: 'modify',
-                                                            path,
-                                                            pattern: /('@angular\/core';*)/,
-                                                            template: '$1\n\nimport { EpicDeallocator } from \'@redux-multipurpose/core\';\n'
-                                                        });
-                                                    }
-                                                    else
-                                                    {
-                                                        //Append ReducerDeallocator decorator to core imports
-                                                        actions.push({
-                                                            type: 'modify',
-                                                            path,
-                                                            pattern: /(\s*\}\s*from\s*\'\s*@redux-multipurpose\/core)/,
-                                                            template: ', EpicDeallocator$1'
-                                                        });
-                                                    }
-
-                                                    //Append EpicDeallocator decorator
-                                                    var template = '$1\n@EpicDeallocator([\'{{ camelCase epicName }}\'])';
-                                                    if (data.epicNoStaticUnmountOnComponent === data.epicNoStaticMountOnComponent || verifyIfStringInFileExists("@EpicInjector", path))
-                                                        actions.push({
-                                                            type: 'modify',
-                                                            path,
-                                                            pattern: /(@EpicInjector\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
-                                                            template
-                                                        });
-                                                    else if (verifyIfStringInFileExists("@ReducerDeallocator", path))
-                                                        actions.push({
-                                                            type: 'modify',
-                                                            path,
-                                                            pattern: /(@ReducerDeallocator\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
-                                                            template
-                                                        });
-                                                    else if (verifyIfStringInFileExists("@ReducerInjector", path))
-                                                        actions.push({
-                                                            type: 'modify',
-                                                            path,
-                                                            pattern: /(@ReducerInjector\s*\(\s*\[(.|\s)+?(?=\])\]\s*\))/gi,
-                                                            template
-                                                        });
-                                                    else
-                                                        actions.push({
-                                                            type: 'modify',
-                                                            path,
-                                                            pattern: /(@Component\s*\(\s*\{(.|\s)+?(?=\})\}\s*\))/gi,
-                                                            template
-                                                        });
-                                                }
-                                                else
-                                                    actions.push({
-                                                        type: 'modify',
-                                                        path,
-                                                        pattern: /(@EpicDeallocator\s*\(\s*\[(\s*\'.+?(?=\')\',*)*)/,
-                                                        template: '$1, \'{{ camelCase epicName }}\'',
-                                                    });
-                                            }
-                                            else
-                                                console.log("File " + path + " not recognized as a component");
-                                        }
-                                    }
-                                }*/
+                                }
                             }
                             else
                                 console.log("Cannot find the typed action to trigger");
