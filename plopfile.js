@@ -950,7 +950,7 @@ module.exports = function (plop)
                                 actions.push({
                                     type: 'modify',
                                     path: storeDirectory + 'ws/ws.model.ts',
-                                    pattern: /(INITIAL_STATE_WEB_SERVICES\s*\n*\=\s*\n*createWsInitialState\s*\n*\(\s*\n*\[\s*\n*)/gi,
+                                    pattern: /(INITIAL_STATE_WEB_SERVICES\s*=\s*createWsInitialState\s*\(\s*\[\s*)/gi,
                                     template: '$1{ \'{{ camelCase substateWsName }}\': { data: {{ camelCase substateWsName }}Adapter.getInitialState() }},\n\t'
                                 });
 
