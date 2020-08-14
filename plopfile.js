@@ -576,6 +576,7 @@ module.exports = function (plop)
                             else
                             {
                                 //Dynamic on component mount
+                                var justAddedInjector = false;
                                 if (data.substateNoWsStaticMountOnComponent && data.substateNoWsStaticMountOnComponent.length)
                                 {
                                     if (!data.substateNoWsStaticMountOnComponent.endsWith('.ts'))
@@ -597,6 +598,7 @@ module.exports = function (plop)
                                                         pattern: /('@angular\/core';*)/,
                                                         template: '$1\n\nimport { ReducerInjector } from \'@redux-multipurpose/core\';\n'
                                                     });
+                                                    justAddedInjector = true;
                                                 }
                                                 else
                                                 {
@@ -652,7 +654,7 @@ module.exports = function (plop)
                                         {
                                             if (!verifyIfStringInFileExists("@ReducerDeallocator", path))
                                             {
-                                                if (!verifyIfStringInFileExists("@redux-multipurpose/core", path))
+                                                if (!verifyIfStringInFileExists("@redux-multipurpose/core", path) && !justAddedInjector)
                                                 {
                                                     //Append ReducerDeallocator decorator import
                                                     actions.push({
