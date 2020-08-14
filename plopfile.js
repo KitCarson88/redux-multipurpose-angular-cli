@@ -1047,7 +1047,7 @@ module.exports = function (plop)
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
                                 pattern: regex,
-                                template: '{{persistSubstate}}: {{persistSubstate}}SecurePersistedReducer'
+                                template: '{{camelCase persistSubstate}}: {{camelCase persistSubstate}}SecurePersistedReducer'
                             });
 
                             const key = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -1057,7 +1057,7 @@ module.exports = function (plop)
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
                                 pattern: /(export\s*function\s*rootReducer\s*\(.+?(?=\))\)\s*\{\s*)/gi,
-                                template: '$1const {{persistSubstate}}SecurePersistedReducer = createSecureStoredReducer(\'{{persistSubstate}}\', \'' + key + '\', storage, {{persistSubstate}}Reducer);\n\n\t'
+                                template: '$1const {{camelCase persistSubstate}}SecurePersistedReducer = createSecureStoredReducer(\'{{camelCase persistSubstate}}\', \'' + key + '\', storage, {{camelCase persistSubstate}}Reducer);\n\n\t'
                             });
                         }
                         else
@@ -1067,7 +1067,7 @@ module.exports = function (plop)
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
                                 pattern: regex,
-                                template: '{{persistSubstate}}: {{persistSubstate}}PersistedReducer'
+                                template: '{{camelCase persistSubstate}}: {{camelCase persistSubstate}}PersistedReducer'
                             });
     
                             //Add persisted reducer creation
@@ -1075,7 +1075,7 @@ module.exports = function (plop)
                                 type: 'modify',
                                 path: storeDirectory + 'store.reducer.ts',
                                 pattern: /(export\s*function\s*rootReducer\s*\(.+?(?=\))\)\s*\{\s*)/gi,     //  .+?(?=abc) Match any characters as few as possible until a "abc" is found, without counting the "abc".
-                                template: '$1const {{persistSubstate}}PersistedReducer = createStoredReducer(\'{{persistSubstate}}\', storage, {{persistSubstate}}Reducer);\n\n\t'
+                                template: '$1const {{camelCase persistSubstate}}PersistedReducer = createStoredReducer(\'{{camelCase persistSubstate}}\', storage, {{camelCase persistSubstate}}Reducer);\n\n\t'
                             });
                         }
                     }
