@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import { {{ pascalCase substateNoWsName }}State, INITIAL_STATE_{{ constantCase substateNoWsName}} } from './{{ camelCase substateNoWsName}}.model';
+import { {{ pascalCase substateNoWsName }}State, INITIAL_STATE_{{ constantCase substateNoWsName}} } from './{{ dashCase substateNoWsName}}.model';
 
 const {{ camelCase substateNoWsName}}Slice = createSlice({
     name: '{{ camelCase substateNoWsName}}',

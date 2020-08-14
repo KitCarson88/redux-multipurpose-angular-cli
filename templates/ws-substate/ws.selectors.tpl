@@ -17,5 +17,15 @@ export const {{ camelCase substateWsName }}Count =
         [{{ camelCase substateWsName }}],
         (items) => items? {{ camelCase substateWsName }}Selectors.selectTotal(items) : null
     );
+export const {{ camelCase substateWsName }}Ids = 
+    createSelector(
+        [{{ camelCase substateWsName }}],
+        (items) => items? {{ camelCase substateWsName }}Selectors.selectIds(items) : null
+    );
+export const {{ camelCase substateWsName }}SelectById = (id) =>
+    createSelector(
+        [{{ camelCase substateWsName }}],
+        (items) => items? {{ camelCase substateWsName }}Selectors.selectById(items, id) : null
+    );
 
 $1
