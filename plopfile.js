@@ -304,7 +304,7 @@ module.exports = function (plop)
                     { value: 'substate', name: 'Create substate' },
                     { value: 'persist', name: 'Persist a substate' },
                     { value: 'epic', name: 'Create epic' },
-                    //{ value: 'saga', name: 'Create saga' }
+                    { value: 'saga', name: 'Create saga' }
                 ]
             }, {
                 when: function(response) {
@@ -435,7 +435,21 @@ module.exports = function (plop)
                 type: 'confirm',
                 name: 'epicStatic',
                 message: 'Do you want to add the epic statically?\n(alternatively you can add it dynamically everywhere in your code)'
-            }],
+            }, {
+                when: function(response) {
+                    return response.operation === 'saga';
+                },
+                type: 'input',
+                name: 'sagaOnTriggerAction',
+                message: 'Please provide the full trigger action name:\n(the full name matches the pattern \'substate/actionName\')'
+            }, {
+                when: function(response) {
+                    return response.operation === 'saga';
+                },
+                type: 'input',
+                name: 'sagaName',
+                message: 'Give a name to the saga method:'
+            },],
             actions: function(data) {
                 var actions = [];
                 var storeDirectory = getStoreDirectory(true);
@@ -1171,7 +1185,19 @@ module.exports = function (plop)
                 }
                 else if (data.operation === 'saga')
                 {
+                    actions.push({
+                        type: 'modify',
+                        path: storeDirectory + 'sagas.ts',
+                        pattern: /(export\s*default\s*function\*\s*rootSaga)/,
+                        templateFile: 'templates/saga.tpl',
+                    });
 
+                    actions.push({
+                        type: 'modify',
+                        path: storeDirectory + 'sagas.ts',
+                        pattern: /(export\s*default\s*function\*\s*rootSaga\s*\(\s*\)\s*\{\s*yield\s*all\s*\(\s*\[\s*)/,
+                        template: '$1\t{{camelCase sagaName}}()\n\t',
+                    });
                 }
 
                 return actions;
