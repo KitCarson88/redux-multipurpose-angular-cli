@@ -25,7 +25,7 @@ const wsSlice = createSlice({
     name: 'ws',
     initialState: INITIAL_STATE_WEB_SERVICES,
     reducers: {
-        resetWsData(state, action: PayloadAction<any>) {
+        resetWsData(state, action: PayloadAction) {
             return INITIAL_STATE_WEB_SERVICES;
         }
     },
