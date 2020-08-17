@@ -441,7 +441,7 @@ module.exports = function (plop)
                 },
                 type: 'input',
                 name: 'sagaOnTriggerAction',
-                message: 'Please provide the full trigger action name:\n(the full name matches the pattern \'substate/actionName\')'
+                message: 'Please provide the full trigger action type:'
             }, {
                 when: function(response) {
                     return response.operation === 'saga';
