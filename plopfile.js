@@ -967,7 +967,7 @@ module.exports = function (plop)
                                     type: 'modify',
                                     path: storeDirectory + 'ws/ws.model.ts',
                                     pattern: /(INITIAL_STATE_WEB_SERVICES\s*=\s*createWsInitialState\s*\(\s*\[\s*)/gi,
-                                    template: '$1{ \'{{ camelCase substateWsName }}\': { data: {{ camelCase substateWsName }}Adapter.getInitialState() }},\n\t'
+                                    template: '$1{ \'{{ camelCase substateWsName }}\': { data: {{ camelCase substateWsName }}Adapter.getInitialState({ available: null }) }},\n\t'
                                 });
 
                             actions.push({

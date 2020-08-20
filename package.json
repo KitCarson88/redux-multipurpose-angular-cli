@@ -1,6 +1,6 @@
 {
   "name": "@redux-multipurpose/angular-cli",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "A multipurpose redux tools angular cli",
   "main": "index.js",
   "scripts": {
