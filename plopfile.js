@@ -921,6 +921,8 @@ module.exports = function (plop)
                             });
                         }
 
+                        var modelPath = getSrcFileAbsolutePath("ws.model.ts");
+
                         //Ws substate data adapter logics
                         data.substateWsNotUseAdapter = !data.substateWsUseAdapter;
                         if (data.substateWsUseAdapter)
@@ -931,8 +933,6 @@ module.exports = function (plop)
                                 path: '{{cwd}}/src/entities/dto/{{ camelCase substateWsName }}DTO.ts',
                                 templateFile: 'templates/ws-substate/ws.dto.tpl'
                             });
-
-                            var modelPath = getSrcFileAbsolutePath("ws.model.ts");
 
                             //Add dto import to ws substate model
                             if (modelPath && !verifyIfStringInFileExists(pascalCase(data.substateWsName) + "DTO", modelPath))
