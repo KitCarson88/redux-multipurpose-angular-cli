@@ -3,7 +3,7 @@ const fs = require('fs');
 const { cwd } = require('process');
 const { camelCase, pascalCase, kebabCase } = require('change-case');
 
-const SRC_DIR = 'src';
+var SRC_DIR = 'src';
 
 function getSrcFileRelativePath(file)
 {
@@ -206,6 +206,8 @@ module.exports = function (plop)
                     data.enableResponsiveness = true;
                 if (data.configurations.indexOf('logger') >= 0)
                     data.enableLogger = true;
+
+                SRC_DIR = data.storeDir;
     
                 actions.push({
                     type: 'add',
