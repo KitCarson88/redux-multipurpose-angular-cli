@@ -3,11 +3,25 @@ const fs = require('fs');
 const { cwd } = require('process');
 const { camelCase, pascalCase, kebabCase } = require('change-case');
 
+const STORE_SEARCH_PATHS = [
+    './src/store/store.module.ts',
+    './apps/**/*/src/store/store.module.ts',
+    './**/*/store/store.module.ts',
+];
+
 var SRC_DIR = 'src';
+
+function setSrcDir(dir)
+{
+    SRC_DIR = dir;
+}
 
 function getSrcFileRelativePath(file)
 {
-    var dirs = glob.sync(SRC_DIR + '/**/*');
+    var dirs = [
+        ...glob.sync(SRC_DIR + '/' + file),
+        ...glob.sync(SRC_DIR + '/**/*/' + file)
+    ];
 
     for (var i = 0; i < dirs.length; ++i)
         if (dirs[i].indexOf(file) >= 0)
@@ -19,6 +33,7 @@ function getSrcFileRelativePath(file)
 function getSrcFileAbsolutePath(file)
 {
     let relative = getSrcFileRelativePath(file);
+
     if (relative)
         return cwd() + '/' + relative;
     else
@@ -27,38 +42,26 @@ function getSrcFileAbsolutePath(file)
 
 function getStoreDirectory(absolute)
 {
-    var filePath;
+    var filePath = SRC_DIR + '/store/';
     if (absolute)
-        filePath = getSrcFileAbsolutePath('store.module');
-    else
-        filePath = getSrcFileRelativePath('store.module');
-    const store = 'store/';
-    return filePath.substring(0, filePath.indexOf(store)) + store;
+        filePath =  cwd() + '/' + filePath;
+    return filePath;
 }
 
-//If store module doesn't exists return false
-//If store module exists in the right folder returns true
-//If store module exists in a wrong folder exits the app
+//If a unique store is found, it returns its relative path (src dir + /store/store.module.ts)
 function verifyStoreModule()
 {
-    var dirs = glob.sync(SRC_DIR + '/**/*');
-
-    for (var i = 0; i < dirs.length; ++i)
+    for (let i = 0; i < STORE_SEARCH_PATHS.length; ++i)
     {
-        var filePath = getSrcFileRelativePath('store.module');
-        if (filePath)
-        {
-            if (filePath.indexOf("store/store.module") < 0)
-            {
-                console.log("The store module is not well configured. Please delete it and restart the cli");
-                process.exit(-1);
-            }
-
-            return true;
-        }
-
-        return false;
+        var dirs = glob.sync(STORE_SEARCH_PATHS[i]);
+        if (dirs && dirs.length)
+            break;
     }
+
+    if (dirs.length == 1)
+        return dirs[0];
+
+    return null;
 }
 
 //Verify if StoreModule is added to app.module yet.
@@ -160,7 +163,9 @@ module.exports = function (plop)
     //Verify if store module exists and it's contained under src/store path
     plop.addHelper('cwd', (p) => process.cwd());
 
-    if (!verifyStoreModule())
+    var storeModulePath = verifyStoreModule();
+
+    if (!storeModulePath)
     {
         console.log('\nNo store.module found. Let\'s initialize a new one\n');
 
@@ -207,7 +212,7 @@ module.exports = function (plop)
                 if (data.configurations.indexOf('logger') >= 0)
                     data.enableLogger = true;
 
-                SRC_DIR = data.storeDir;
+                setSrcDir(data.storeDir);
     
                 actions.push({
                     type: 'add',
@@ -272,7 +277,7 @@ module.exports = function (plop)
                         console.log("Please provide at least five breakpoints to customize responsiveness");
                 }
 
-                let appModuleFile = getSrcFileAbsolutePath('app.module');
+                let appModuleFile = getSrcFileAbsolutePath('app.module.ts');
                 if (!verifyInAppModuleImport(appModuleFile))
                 {
                     appModuleImportsOnNewLines(appModuleFile);
@@ -297,6 +302,10 @@ module.exports = function (plop)
     }
     else
     {
+        let srcPath = storeModulePath.substring(0, storeModulePath.indexOf('/store/store.module.ts'));
+        srcPath = srcPath.substring(2);
+        setSrcDir(srcPath);
+
         plop.setGenerator('create', {
             prompts: [{
                 type: 'list',
@@ -689,7 +698,7 @@ module.exports = function (plop)
                         //Create new provider class if doesn't exist yet
                         actions.push({
                             type: 'add',
-                            path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
+                            path: '{{cwd}}/' + SRC_DIR + '/providers/{{ dashCase substateWsProvider }}.ts',
                             templateFile: 'templates/ws-substate/ws.provider.tpl',
                             abortOnFail: false
                         });
@@ -697,7 +706,7 @@ module.exports = function (plop)
                         //Create provider index file if doesn't exist yet
                         actions.push({
                             type: 'add',
-                            path: '{{cwd}}/src/providers/index.ts',
+                            path: '{{cwd}}/' + SRC_DIR + '/providers/index.ts',
                             template: 'export { {{ pascalCase substateWsProvider }}Provider } from \'./{{ dashCase substateWsProvider }}\';',
                             abortOnFail: false
                         });
@@ -705,7 +714,7 @@ module.exports = function (plop)
                         //Add provider call to provider
                         actions.push({
                             type: 'modify',
-                            path: '{{cwd}}/src/providers/{{ dashCase substateWsProvider }}.ts',
+                            path: '{{cwd}}/' + SRC_DIR + '/providers/{{ dashCase substateWsProvider }}.ts',
                             pattern: /(export\s*class\s*\w*Provider\b\s*\n*\{)/,
                             templateFile: 'templates/ws-substate/ws.provider-call.tpl'
                         });
@@ -715,7 +724,7 @@ module.exports = function (plop)
                         if (indexPath && !verifyIfStringInFileExists(pascalCase(data.substateWsProvider) + "Provider", indexPath))
                             actions.push({
                                 type: 'append',
-                                path: '{{cwd}}/src/providers/index.ts',
+                                path: '{{cwd}}/' + SRC_DIR + '/providers/index.ts',
                                 template: 'export { {{ pascalCase substateWsProvider }}Provider } from \'./{{ dashCase substateWsProvider }}\';'
                             });
 
@@ -786,7 +795,7 @@ module.exports = function (plop)
                             //Create ws substate data dto
                             actions.push({
                                 type: 'add',
-                                path: '{{cwd}}/src/entities/dto/{{ camelCase substateWsName }}DTO.ts',
+                                path: '{{cwd}}/' + SRC_DIR + '/entities/dto/{{ camelCase substateWsName }}DTO.ts',
                                 templateFile: 'templates/ws-substate/ws.dto.tpl'
                             });
 
